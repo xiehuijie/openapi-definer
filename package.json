@@ -79,7 +79,7 @@
     "vitest": "^4.0.16"
   },
   "dependencies": {
-    "commander": "^14.0.2",
+    "commander": "12.1.0",
     "zod": "^4.2.1"
   }
 }
