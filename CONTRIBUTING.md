@@ -7,7 +7,7 @@ Thank you for your interest in contributing to OpenAPI Definder! This document p
 ### Prerequisites
 
 - Node.js >= 18.0.0
-- pnpm >= 10.0.0
+- pnpm >= 9.0.0
 
 ### Getting Started
 
