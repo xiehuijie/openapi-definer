@@ -47,9 +47,11 @@ jobs:
       - name: Build
         run: pnpm build
 
+      # Codecov upload is optional and won't fail the build
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         if: matrix.node-version == '20.x'
+        continue-on-error: true
         with:
           files: ./coverage/coverage-final.json
           flags: unittests
