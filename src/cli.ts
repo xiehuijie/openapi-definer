@@ -13,7 +13,9 @@ const program = new Command();
 
 program
   .name('openapi-definder')
-  .description('A factory definition program that allows you to define things related to the API using intuitive code')
+  .description(
+    'A factory definition program that allows you to define things related to the API using intuitive code'
+  )
   .version(version, '-v, --version', 'Display version information');
 
 program
