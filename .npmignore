@@ -1,0 +1,47 @@
+# Source files
+src/
+tests/
+playground/
+examples/
+
+# Configuration files
+tsconfig.json
+tsup.config.ts
+vitest.config.ts
+eslint.config.js
+.prettierrc
+
+# Development files
+.github/
+.git/
+.gitignore
+.eslintcache
+
+# Documentation (keep only essential)
+docs/
+CONTRIBUTING.md
+CHANGELOG.md
+
+# Build artifacts
+*.tsbuildinfo
+coverage/
+.nyc_output/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
