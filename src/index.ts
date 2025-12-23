@@ -8,24 +8,6 @@
 
 export const version = '0.1.0';
 
-/**
- * Main API definition interface
- */
-export interface ApiDefinition {
-  name: string;
-  version: string;
-  description?: string;
-}
-
-/**
- * Create an API definition
- * @param definition - The API definition configuration
- * @returns The configured API definition
- */
-export function defineApi(definition: ApiDefinition): ApiDefinition {
-  return definition;
-}
-
 // Export all types and utilities
 export * from './types';
 export * from './utils';

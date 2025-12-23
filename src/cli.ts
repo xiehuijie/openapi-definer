@@ -6,90 +6,46 @@
  * Command-line interface for generating server and client SDKs from API definitions.
  */
 
+import { Command } from 'commander';
 import { version } from './index.js';
 
-/**
- * Display help information
- */
-function displayHelp(): void {
-  console.log(`
-OpenAPI Definder v${version}
+const program = new Command();
 
-Usage: openapi-definder [command] [options]
+program
+  .name('openapi-definder')
+  .description('A factory definition program that allows you to define things related to the API using intuitive code')
+  .version(version, '-v, --version', 'Display version information');
 
-Commands:
-  generate    Generate SDK from API definition
-  init        Initialize a new API definition project
-  validate    Validate an API definition
-  help        Display this help message
+program
+  .command('init')
+  .description('Initialize a new API definition project')
+  .option('-d, --dir <directory>', 'Target directory', '.')
+  .action((options) => {
+    console.log('Initializing new API definition project...');
+    console.log('Directory:', options.dir);
+    // Implementation to be added
+  });
 
-Options:
-  --version   Display version information
-  --help      Display this help message
+program
+  .command('generate')
+  .description('Generate SDK from API definition')
+  .option('-i, --input <file>', 'Input API definition file')
+  .option('-o, --output <directory>', 'Output directory for generated SDK')
+  .option('-t, --type <type>', 'SDK type (client, server, both)', 'both')
+  .action((options) => {
+    console.log('Generating SDK from API definition...');
+    console.log('Options:', options);
+    // Implementation to be added
+  });
 
-Examples:
-  openapi-definder init
-  openapi-definder generate --input api.ts --output ./sdk
-  openapi-definder validate api.ts
+program
+  .command('validate')
+  .description('Validate an API definition')
+  .argument('<file>', 'API definition file to validate')
+  .action((file) => {
+    console.log('Validating API definition...');
+    console.log('File:', file);
+    // Implementation to be added
+  });
 
-For more information, visit: https://github.com/xiehuijie/openapi-definder
-`);
-}
-
-/**
- * Display version information
- */
-function displayVersion(): void {
-  console.log(`openapi-definder v${version}`);
-}
-
-/**
- * Main CLI entry point
- */
-function main(): void {
-  const args = process.argv.slice(2);
-
-  if (args.length === 0) {
-    displayHelp();
-    return;
-  }
-
-  const command = args[0];
-
-  switch (command) {
-    case 'help':
-    case '--help':
-    case '-h':
-      displayHelp();
-      break;
-
-    case 'version':
-    case '--version':
-    case '-v':
-      displayVersion();
-      break;
-
-    case 'init':
-      console.log('Initializing new API definition project...');
-      console.log('(Not implemented yet)');
-      break;
-
-    case 'generate':
-      console.log('Generating SDK from API definition...');
-      console.log('(Not implemented yet)');
-      break;
-
-    case 'validate':
-      console.log('Validating API definition...');
-      console.log('(Not implemented yet)');
-      break;
-
-    default:
-      console.error(`Unknown command: ${command}`);
-      console.log('Run "openapi-definder help" for usage information.');
-      process.exit(1);
-  }
-}
-
-// Run CLI
-main();
+program.parse();
