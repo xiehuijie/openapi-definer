@@ -1,6 +1,6 @@
-# Contributing to OpenAPI Definder
+# Contributing to OpenAPI Definer
 
-Thank you for your interest in contributing to OpenAPI Definder! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to OpenAPI Definer! This document provides guidelines and instructions for contributing.
 
 ## Development Setup
 
@@ -14,8 +14,8 @@ Thank you for your interest in contributing to OpenAPI Definder! This document p
 1. Fork the repository
 2. Clone your fork:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/openapi-definder.git
-   cd openapi-definder
+   git clone https://github.com/YOUR_USERNAME/openapi-definer.git
+   cd openapi-definer
    ```
 
 3. Install dependencies:

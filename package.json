@@ -1,5 +1,5 @@
 {
-  "name": "openapi-definder",
+  "name": "openapi-definer",
   "version": "0.1.0",
   "description": "A factory definition program that allows you to define things related to the API using intuitive code and generate a non-intrusive SDK that can be highly reused by both the server and the client.",
   "type": "module",
@@ -19,7 +19,7 @@
     }
   },
   "bin": {
-    "openapi-definder": "./dist/cli.js"
+    "openapi-definer": "./dist/cli.js"
   },
   "files": [
     "dist",
@@ -38,8 +38,7 @@
     "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
     "typecheck": "tsc --noEmit",
     "playground": "tsx playground/index.ts",
-    "prepublishOnly": "pnpm run build && pnpm run test && pnpm run lint",
-    "prepack": "pnpm run build"
+    "prepare": "npm run build"
   },
   "keywords": [
     "openapi",
@@ -57,12 +56,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/xiehuijie/openapi-definder.git"
+    "url": "https://github.com/xiehuijie/openapi-definer.git"
   },
   "bugs": {
-    "url": "https://github.com/xiehuijie/openapi-definder/issues"
+    "url": "https://github.com/xiehuijie/openapi-definer/issues"
   },
-  "homepage": "https://github.com/xiehuijie/openapi-definder#readme",
+  "homepage": "https://github.com/xiehuijie/openapi-definer#readme",
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@types/node": "^25.0.3",
