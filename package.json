@@ -38,9 +38,7 @@
     "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
     "typecheck": "tsc --noEmit",
     "playground": "tsx playground/index.ts",
-    "prepare": "pnpm run build",
-    "prepublishOnly": "pnpm run build && pnpm run test && pnpm run lint",
-    "prepack": "pnpm run build"
+    "prepare": "npm run build"
   },
   "keywords": [
     "openapi",
