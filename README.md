@@ -1,9 +1,9 @@
-# openapi-definder
+# openapi-definer
 
 A factory definition program that allows you to define things related to the API using intuitive code and generate a non-intrusive SDK that can be highly reused by both the server and the client.
 
-[![CI](https://github.com/xiehuijie/openapi-definder/actions/workflows/ci.yml/badge.svg)](https://github.com/xiehuijie/openapi-definder/actions/workflows/ci.yml)
-[![npm version](https://badge.fury.io/js/openapi-definder.svg)](https://www.npmjs.com/package/openapi-definder)
+[![CI](https://github.com/xiehuijie/openapi-definer/actions/workflows/ci.yml/badge.svg)](https://github.com/xiehuijie/openapi-definer/actions/workflows/ci.yml)
+[![npm version](https://badge.fury.io/js/openapi-definer.svg)](https://www.npmjs.com/package/openapi-definer)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
@@ -18,11 +18,11 @@ A factory definition program that allows you to define things related to the API
 ## Installation
 
 ```bash
-npm install openapi-definder
+npm install openapi-definer
 # or
-pnpm add openapi-definder
+pnpm add openapi-definer
 # or
-yarn add openapi-definder
+yarn add openapi-definer
 ```
 
 ## Quick Start
@@ -30,7 +30,7 @@ yarn add openapi-definder
 ### Define an API
 
 ```typescript
-import { defineApi } from 'openapi-definder';
+import { defineApi } from 'openapi-definer';
 
 const api = defineApi({
   name: 'pet-store',
@@ -43,13 +43,13 @@ const api = defineApi({
 
 ```bash
 # Initialize a new project
-openapi-definder init
+openapi-definer init
 
 # Generate SDK
-openapi-definder generate --input api.ts --output ./sdk
+openapi-definer generate --input api.ts --output ./sdk
 
 # Validate API definition
-openapi-definder validate api.ts
+openapi-definer validate api.ts
 ```
 
 ## Documentation
@@ -97,7 +97,7 @@ pnpm playground
 ### Project Structure
 
 ```
-openapi-definder/
+openapi-definer/
 ├── src/              # Source code
 │   ├── index.ts      # Main entry point
 │   ├── cli.ts        # CLI entry point
@@ -138,6 +138,6 @@ MIT © [V5.xie](https://github.com/xiehuijie)
 ## Support
 
 - 📝 [Documentation](docs/)
-- 🐛 [Issue Tracker](https://github.com/xiehuijie/openapi-definder/issues)
-- 💬 [Discussions](https://github.com/xiehuijie/openapi-definder/discussions)
+- 🐛 [Issue Tracker](https://github.com/xiehuijie/openapi-definer/issues)
+- 💬 [Discussions](https://github.com/xiehuijie/openapi-definer/discussions)
 

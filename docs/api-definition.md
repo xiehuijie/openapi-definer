@@ -2,10 +2,10 @@
 
 ## Basic Structure
 
-An API definition is the core of OpenAPI Definder. It describes your API in a type-safe, intuitive way.
+An API definition is the core of OpenAPI Definer. It describes your API in a type-safe, intuitive way.
 
 ```typescript
-import { defineApi } from 'openapi-definder';
+import { defineApi } from 'openapi-definer';
 
 const api = defineApi({
   name: 'pet-store',
@@ -42,7 +42,7 @@ description: 'My awesome API for managing resources'
 
 ## Types
 
-OpenAPI Definder provides several TypeScript types to help you define your API:
+OpenAPI Definer provides several TypeScript types to help you define your API:
 
 ### HttpMethod
 
@@ -80,7 +80,7 @@ interface SchemaDefinition {
 Ensures a path starts with `/`:
 
 ```typescript
-import { formatPath } from 'openapi-definder';
+import { formatPath } from 'openapi-definer';
 
 formatPath('api/users'); // '/api/users'
 formatPath('/api/users'); // '/api/users'
@@ -91,7 +91,7 @@ formatPath('/api/users'); // '/api/users'
 Validates an HTTP method:
 
 ```typescript
-import { isValidHttpMethod } from 'openapi-definder';
+import { isValidHttpMethod } from 'openapi-definer';
 
 isValidHttpMethod('GET'); // true
 isValidHttpMethod('INVALID'); // false

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { version } from '../src/index';
 
-describe('openapi-definder', () => {
+describe('openapi-definer', () => {
   describe('version', () => {
     it('should export version', () => {
       expect(version).toBeDefined();

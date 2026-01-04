@@ -1,5 +1,5 @@
 /**
- * Utility functions for OpenAPI Definder
+ * Utility functions for OpenAPI Definer
  */
 
 // Utility functions will be defined here as development progresses

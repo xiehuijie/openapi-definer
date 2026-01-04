@@ -1,5 +1,5 @@
 /**
- * Common types for OpenAPI Definder
+ * Common types for OpenAPI Definer
  */
 
 // Types will be defined here as development progresses

@@ -1,5 +1,5 @@
 /**
- * Playground for testing OpenAPI Definder
+ * Playground for testing OpenAPI Definer
  *
  * Run with: pnpm playground
  */
@@ -7,7 +7,7 @@
 import { version } from '../src/index.js';
 
 console.log('='.repeat(60));
-console.log('OpenAPI Definder Playground');
+console.log('OpenAPI Definer Playground');
 console.log(`Version: ${version}`);
 console.log('='.repeat(60));
 console.log();

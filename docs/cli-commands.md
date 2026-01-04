@@ -1,21 +1,21 @@
 # CLI Commands
 
-## openapi-definder init
+## openapi-definer init
 
 Initialize a new API definition project.
 
 ```bash
-openapi-definder init
+openapi-definer init
 ```
 
 This command creates a new project structure with sample API definitions.
 
-## openapi-definder generate
+## openapi-definer generate
 
 Generate server or client SDK from API definition.
 
 ```bash
-openapi-definder generate --input api.ts --output ./sdk
+openapi-definer generate --input api.ts --output ./sdk
 ```
 
 ### Options
@@ -24,28 +24,28 @@ openapi-definder generate --input api.ts --output ./sdk
 - `--output` - Output directory for generated SDK
 - `--type` - SDK type: `server` or `client` (default: both)
 
-## openapi-definder validate
+## openapi-definer validate
 
 Validate an API definition file.
 
 ```bash
-openapi-definder validate api.ts
+openapi-definer validate api.ts
 ```
 
 This command checks if the API definition is valid and reports any errors.
 
-## openapi-definder help
+## openapi-definer help
 
 Display help information.
 
 ```bash
-openapi-definder help
+openapi-definer help
 ```
 
-## openapi-definder version
+## openapi-definer version
 
 Display version information.
 
 ```bash
-openapi-definder version
+openapi-definer version
 ```

@@ -3,11 +3,11 @@
 ## Installation
 
 ```bash
-npm install openapi-definder
+npm install openapi-definer
 # or
-pnpm add openapi-definder
+pnpm add openapi-definer
 # or
-yarn add openapi-definder
+yarn add openapi-definer
 ```
 
 ## Quick Start
@@ -15,7 +15,7 @@ yarn add openapi-definder
 ### Define an API
 
 ```typescript
-import { defineApi } from 'openapi-definder';
+import { defineApi } from 'openapi-definer';
 
 const api = defineApi({
   name: 'my-api',
@@ -28,13 +28,13 @@ const api = defineApi({
 
 ```bash
 # Initialize a new project
-openapi-definder init
+openapi-definer init
 
 # Generate SDK
-openapi-definder generate --input api.ts --output ./sdk
+openapi-definer generate --input api.ts --output ./sdk
 
 # Validate API definition
-openapi-definder validate api.ts
+openapi-definer validate api.ts
 ```
 
 ## Next Steps

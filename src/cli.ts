@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * OpenAPI Definder CLI
+ * OpenAPI Definer CLI
  *
  * Command-line interface for generating server and client SDKs from API definitions.
  */
@@ -12,7 +12,7 @@ import { version } from './index.js';
 const program = new Command();
 
 program
-  .name('openapi-definder')
+  .name('openapi-definer')
   .description(
     'A factory definition program that allows you to define things related to the API using intuitive code'
   )

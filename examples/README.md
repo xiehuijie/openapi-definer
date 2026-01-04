@@ -3,7 +3,7 @@
 This example demonstrates a simple Pet Store API definition.
 
 ```typescript
-import { defineApi } from 'openapi-definder';
+import { defineApi } from 'openapi-definer';
 
 const petStoreApi = defineApi({
   name: 'pet-store',
