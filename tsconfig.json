@@ -2,10 +2,7 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "nodenext",
-    "lib": [
-      "ES2022",
-      "ESNext",
-    ],
+    "lib": ["ES2022", "ESNext"],
     "moduleResolution": "nodenext",
     "resolveJsonModule": true,
     "allowJs": true,
@@ -24,14 +21,9 @@
     "noImplicitReturns": true,
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
+    "emitDeclarationOnly": true,
+    "allowImportingTsExtensions": true
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.spec.ts",
-    "**/*.test.ts"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
 }
