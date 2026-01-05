@@ -1,7 +1,6 @@
 import { z } from 'zod';
-import { Text } from '../utils/i18n.ts';
-
-export type ZodFieldType = z.ZodString | z.ZodStringFormat | z.ZodNumber | z.ZodNumberFormat | z.ZodBoolean | z.ZodNull;
+import type { Text } from '../utils/i18n.ts';
+import type { ZodFieldType } from './_zod.ts';
 
 interface FieldOptions<T extends ZodFieldType> {
   /**
@@ -22,6 +21,9 @@ interface FieldOptions<T extends ZodFieldType> {
   description?: Text;
   /**
    * ### 示例
+   *
+   * - 此示例用于展示符合该字段定义的有效值
+   * - 该属性源于json schema规范
    */
   examples?: z.infer<T>[];
 }

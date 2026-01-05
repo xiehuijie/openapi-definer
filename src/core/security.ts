@@ -52,3 +52,6 @@ export class SecurityDefinition {
 }
 
 export const defineApiKeySecurity = (options: ApiKeyOptions) => new SecurityDefinition('apiKey', options);
+export const defineHttpSecurity = (options: HttpOptions) => new SecurityDefinition('http', options);
+export const defineOAuth2Security = (options: OAuth2Options) => new SecurityDefinition('oauth2', options);
+export const defineOpenIdConnectSecurity = (options: OpenIdConnectOptions) => new SecurityDefinition('openIdConnect', options);

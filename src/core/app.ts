@@ -3,7 +3,8 @@ import type { SecurityDefinition } from './security.ts';
 import type { ExternalDocsDefinition } from './external.ts';
 import type { ServerDefinition } from './server.ts';
 import type { TagDefinition } from './tag.ts';
-import { Endpoint } from './endpoint.ts';
+import { EndpointDefinition } from './endpoint.ts';
+import { ZodStructType } from './_zod.ts';
 
 interface AppOptions {
   /**
@@ -45,7 +46,10 @@ interface AppOptions {
   /**
    * ### API 安全方案
    *
-   * 声明可用于整个 API 的安全机制。值列表包括可使用的替代安全要求对象。只需满足其中一个安全要求对象即可授权请求。单个操作可以覆盖此定义。为了使安全可选，可以在数组中包含一个空的安全要求对象。
+   * - 声明可用于整个 API 的安全机制。
+   * - 值列表包括可使用的替代安全要求对象。
+   * - 只需满足其中一个安全要求对象即可授权请求。
+   * - 可在单端点中覆盖此定义。
    */
   security?: SecurityDefinition[];
   /**
@@ -62,12 +66,23 @@ interface AppOptions {
    * ### 标签列表
    */
   tags?: TagDefinition[];
+  /**
+   * ### 统一处理所有端点的返回值结构体
+   *
+   * - 可通过此回调函数对所有端点的返回值结构体进行统一处理。
+   * @param id 端点ID
+   * @param struct 原始返回值结构体
+   * @defaults 默认不做任何处理，即：`(id, struct) => struct`
+   * @returns 处理后的返回值结构体
+   */
+
+  unifiyResponseStruct?: (id: string, struct: ZodStructType) => ZodStructType;
 }
 
 class AppDefinition {
   private options: AppOptions;
-  private endpoints: Endpoint[] = [];
-  
+  private endpoints: EndpointDefinition[] = [];
+
   constructor(options: AppOptions) {
     this.options = options;
   }
@@ -75,59 +90,59 @@ class AppDefinition {
   public get title() {
     return this.options.title;
   }
-  
+
   public get description() {
     return this.options.description;
   }
-  
+
   public get version() {
     return this.options.version;
   }
-  
+
   public get termsOfService() {
     return this.options.termsOfService;
   }
-  
+
   public get contact() {
     return this.options.contact;
   }
-  
+
   public get license() {
     return this.options.license;
   }
-  
+
   public get security() {
     return this.options.security;
   }
-  
+
   public get servers() {
     return this.options.servers;
   }
-  
+
   public get externalDocs() {
     return this.options.externalDocs;
   }
-  
+
   public get tags() {
     return this.options.tags;
   }
-  
+
   /**
    * 添加端点
    */
-  public addEndpoint(endpoint: Endpoint) {
+  public addEndpoint(endpoint: EndpointDefinition) {
     this.endpoints.push(endpoint);
     return this;
   }
-  
+
   /**
    * 批量添加端点
    */
-  public addEndpoints(endpoints: Endpoint[]) {
+  public addEndpoints(endpoints: EndpointDefinition[]) {
     this.endpoints.push(...endpoints);
     return this;
   }
-  
+
   /**
    * 获取所有端点
    */

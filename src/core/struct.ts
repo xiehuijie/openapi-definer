@@ -1,8 +1,6 @@
 import { z } from 'zod';
 import type { Text } from '../utils/i18n.ts';
-import type { ZodFieldType } from './field.ts';
-
-type ZodStructType = z.ZodObject | z.ZodArray<z.ZodObject | ZodFieldType | ZodStructType>;
+import type { ZodStructType } from './_zod.ts';
 
 interface StructOptions<T extends ZodStructType> {
   /**
@@ -23,6 +21,9 @@ interface StructOptions<T extends ZodStructType> {
   description?: Text;
   /**
    * ### 示例
+   *
+   * - 此示例用于展示符合该结构体定义的有效值
+   * - 该属性源于json schema规范
    */
   examples?: z.infer<T>[];
 }

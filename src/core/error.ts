@@ -1,5 +1,6 @@
 import type { Text } from '../utils/i18n.ts';
 import type { HttpStatusCode } from '../types/httpStatus.ts';
+import type { ZodStructType } from './_zod.ts';
 
 interface ErrorOptions {
   /**
@@ -13,14 +14,18 @@ interface ErrorOptions {
   /**
    * ### 错误名称
    */
-  name: Text;
+  name?: Text;
   /**
    * ### 错误描述 `i18n`
    */
-  description: Text;
+  description?: Text;
+  /**
+   * ### 数据属性
+   */
+  schema?: ZodStructType;
 }
 
-class ErrorDefinition {
+export class ErrorDefinition {
   private options: ErrorOptions;
   constructor(options: ErrorOptions) {
     this.options = options;

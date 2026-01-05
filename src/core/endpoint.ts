@@ -1,67 +1,61 @@
-import type { z } from 'zod';
 import type { Text } from '../utils/i18n.ts';
 import type { Method } from '../types/method.ts';
 import type { TagDefinition } from './tag.ts';
 import type { SecurityDefinition } from './security.ts';
 import type { ExternalDocsDefinition } from './external.ts';
-import type { ServerDefinition } from './server.ts';
+import type { ZodFieldType } from './_zod.ts';
+import type { ErrorDefinition } from './error.ts';
+import type { HttpStatusCode } from '../types/httpStatus.ts';
+import type { MediaTypeDefinition } from './media.ts';
 
-/** 参数位置 */
-type ParameterIn = 'path' | 'query' | 'header' | 'cookie';
+interface CommonParameters {
+  /**
+   * ### 查询参数
+   */
+  query?: Record<string, ZodFieldType>;
+  /**
+   * ### 头参数
+   */
+  header?: Record<string, ZodFieldType>;
+  /**
+   * ### Cookie参数
+   */
+  cookie?: Record<string, ZodFieldType>;
+  /**
+   * ### 路径参数
+   */
+  path?: Record<string, ZodFieldType>;
+}
 
-/** 参数定义 */
-interface Parameter<T extends z.ZodType = z.ZodType> {
-  /** 参数名称 */
-  name: string;
-  /** 参数位置 */
-  in: ParameterIn;
-  /** 参数描述 */
+interface RequestBody {
+  /**
+   * ### 请求体
+   */
+  body?: MediaTypeDefinition;
+}
+
+interface Response {
+  /**
+   * ### 响应状态码
+   *
+   * 默认值为 `200`
+   */
+  status?: HttpStatusCode;
+  /**
+   * ### 响应描述
+   */
   description?: Text;
-  /** 是否必需 */
-  required?: boolean;
-  /** 参数schema */
-  schema: T;
-  /** 示例值 */
-  example?: z.infer<T>;
+  /**
+   * ### 响应内容
+   */
+  content?: MediaTypeDefinition;
+  /**
+   * ### 额外响应头
+   */
+  headers?: Record<string, ZodFieldType>;
 }
 
-/** 请求体定义 */
-interface RequestBody<T extends z.ZodType = z.ZodType> {
-  /** 描述 */
-  description?: Text;
-  /** 内容类型和schema映射 */
-  content: {
-    [mediaType: string]: {
-      schema: T;
-      example?: z.infer<T>;
-    };
-  };
-  /** 是否必需 */
-  required?: boolean;
-}
-
-/** 响应定义 */
-interface Response<T extends z.ZodType = z.ZodType> {
-  /** 描述 */
-  description: Text;
-  /** 响应头 */
-  headers?: Record<
-    string,
-    {
-      description?: Text;
-      schema: z.ZodType;
-    }
-  >;
-  /** 内容类型和schema映射 */
-  content?: {
-    [mediaType: string]: {
-      schema: T;
-      example?: z.infer<T>;
-    };
-  };
-}
-
-interface EndpointOptions {
+interface EndpointOptions<M extends Method = Method> {
   /**
    * ### 接口ID `unique`
    */
@@ -73,7 +67,7 @@ interface EndpointOptions {
   /**
    * ### HTTP方法
    */
-  method: Method;
+  method: M;
   /**
    * ### 接口摘要
    */
@@ -83,6 +77,18 @@ interface EndpointOptions {
    */
   description?: Text;
   /**
+   * ### 参数定义
+   */
+  parameters?: CommonParameters & (M extends 'GET' | 'DELETE' | 'HEAD' ? {} : RequestBody);
+  /**
+   * ### 响应定义
+   */
+  responses: Response | Response[];
+  /**
+   * ### 可能的错误列表
+   */
+  errors?: ErrorDefinition[];
+  /**
    * ### 标签列表
    */
   tags?: TagDefinition[];
@@ -91,34 +97,18 @@ interface EndpointOptions {
    */
   externalDocs?: ExternalDocsDefinition;
   /**
-   * ### 参数列表
-   */
-  parameters?: Parameter[];
-  /**
-   * ### 请求体
-   */
-  requestBody?: RequestBody;
-  /**
-   * ### 响应定义
-   */
-  responses: {
-    [statusCode: string]: Response;
-  };
-  /**
    * ### 安全要求
+   *
+   * 可通过此属性为此端点覆盖应用层面的安全要求数组。若此端点不需要任何安全措施，可以将此属性设置为空数组。
    */
   security?: SecurityDefinition[];
-  /**
-   * ### 服务器列表
-   */
-  servers?: ServerDefinition[];
   /**
    * ### 是否已废弃
    */
   deprecated?: boolean;
 }
 
-class Endpoint {
+export class EndpointDefinition {
   private options: EndpointOptions;
   constructor(options: EndpointOptions) {
     this.options = options;
@@ -127,56 +117,6 @@ class Endpoint {
   get id() {
     return this.options.id;
   }
-
-  get path() {
-    return this.options.path;
-  }
-
-  get method() {
-    return this.options.method;
-  }
-
-  get summary() {
-    return this.options.summary;
-  }
-
-  get description() {
-    return this.options.description;
-  }
-
-  get tags() {
-    return this.options.tags;
-  }
-
-  get parameters() {
-    return this.options.parameters;
-  }
-
-  get requestBody() {
-    return this.options.requestBody;
-  }
-
-  get responses() {
-    return this.options.responses;
-  }
-
-  get security() {
-    return this.options.security;
-  }
-
-  get servers() {
-    return this.options.servers;
-  }
-
-  get deprecated() {
-    return this.options.deprecated;
-  }
-
-  get externalDocs() {
-    return this.options.externalDocs;
-  }
 }
 
-export { Endpoint };
-export type { EndpointOptions, Parameter, RequestBody, Response, ParameterIn };
-export const defineEndpoint = (options: EndpointOptions): Endpoint => new Endpoint(options);
+export const defineEndpoint = (options: EndpointOptions): EndpointDefinition => new EndpointDefinition(options);
