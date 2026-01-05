@@ -1,5 +1,5 @@
 import type { Text } from '../utils/i18n.ts';
-import type { Method } from '../types/method.ts';
+import type { Method } from '../types/openapi.ts';
 import type { TagDefinition } from './tag.ts';
 import type { SecurityDefinition } from './security.ts';
 import type { ExternalDocsDefinition } from './external.ts';
@@ -71,7 +71,7 @@ interface EndpointOptions<M extends Method = Method> {
   /**
    * ### 接口摘要
    */
-  summary?: Text;
+  title?: Text;
   /**
    * ### 接口描述 `i18n` `md`
    */
