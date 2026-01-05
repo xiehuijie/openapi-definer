@@ -1,16 +1,29 @@
-type SecurityType = 'apiKey' | 'http' | 'oauth2' | 'openIdConnect';
+import { OpenAPIV3_1 } from 'openapi-types';
+import type { SecurityType, ParameterLocation } from '../types/openapi.ts';
+import type { Text } from '../utils/i18n.ts';
+import { setSecurityFn } from './_openapi.ts';
+
 interface BaseOptions {
-  /** 安全方案的简短描述 `md` */
-  description: string;
+  /**
+   * 安全方案的简短描述 `md`
+   */
+  description: Text;
 }
 interface ApiKeyOptions extends BaseOptions {
-  /** 要使用的头部、查询或 cookie 参数的名称 */
+  /**
+   * 要使用的头部、查询或 cookie 参数的名称
+   */
   name: string;
-  /** API 密钥的位置 */
-  in: 'query' | 'header' | 'cookie';
+  /**
+   * API 密钥的位置
+   */
+  in: Exclude<ParameterLocation, 'path'>;
 }
 interface HttpOptions extends BaseOptions {
-  /** 要在 RFC7235 定义的 Authorization 头部中使用的 HTTP 授权方案名称。使用的值应在 IANA Authentication Scheme registry 中注册 */
+  /**
+   * 要在 RFC7235 定义的 Authorization 头部中使用的 HTTP 授权方案名称。
+   * 使用的值应在 IANA Authentication Scheme registry 中注册
+   */
   scheme: string;
 }
 interface OAuthFlowItem {
@@ -40,18 +53,59 @@ interface OpenIdConnectOptions extends BaseOptions {
   openIdConnectUrl: string;
 }
 
+export type SecurityOptions = ApiKeyOptions | HttpOptions | OAuth2Options | OpenIdConnectOptions;
+
+/**
+ * ### 安全方案定义
+ * ---
+ */
 export class SecurityDefinition {
   constructor(type: 'apiKey', options: ApiKeyOptions);
   constructor(type: 'http', options: HttpOptions);
   constructor(type: 'oauth2', options: OAuth2Options);
   constructor(type: 'openIdConnect', options: OpenIdConnectOptions);
   constructor(
-    readonly type: SecurityType,
-    readonly options: ApiKeyOptions | HttpOptions | OAuth2Options | OpenIdConnectOptions,
-  ) {}
+    public readonly type: SecurityType,
+    private readonly options: SecurityOptions,
+  ) {
+    setSecurityFn(this, (locale) => {
+      const result = { type: this.type } as OpenAPIV3_1.SecuritySchemeObject;
+      switch (result.type) {
+        case 'apiKey': {
+          const options = this.options as ApiKeyOptions;
+          result.in = options.in;
+          result.name = options.name;
+          if (options.description !== void 0) result.description = options.description[locale];
+          break;
+        }
+        default:
+          throw new Error(`Unsupported security type: ${result.type}`);
+      }
+      return result;
+    });
+  }
 }
-
+/**
+ * ### 定义 API Key 安全方案
+ * ---
+ * @param options
+ */
 export const defineApiKeySecurity = (options: ApiKeyOptions) => new SecurityDefinition('apiKey', options);
+/**
+ * ### 定义 HTTP 认证安全方案
+ * ---
+ * @param options
+ */
 export const defineHttpSecurity = (options: HttpOptions) => new SecurityDefinition('http', options);
+/**
+ * ### 定义 OAuth2 安全方案
+ * ---
+ * @param options
+ */
 export const defineOAuth2Security = (options: OAuth2Options) => new SecurityDefinition('oauth2', options);
+/**
+ * ### 定义 OpenID Connect 安全方案
+ * ---
+ * @param options
+ */
 export const defineOpenIdConnectSecurity = (options: OpenIdConnectOptions) => new SecurityDefinition('openIdConnect', options);
