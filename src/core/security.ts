@@ -40,7 +40,7 @@ interface OpenIdConnectOptions extends BaseOptions {
   openIdConnectUrl: string;
 }
 
-class SecurityDefinition {
+export class SecurityDefinition {
   constructor(type: 'apiKey', options: ApiKeyOptions);
   constructor(type: 'http', options: HttpOptions);
   constructor(type: 'oauth2', options: OAuth2Options);

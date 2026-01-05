@@ -9,3 +9,5 @@
 export const version = '0.1.0';
 
 export * from './core/index.ts';
+export * from './utils/index.ts';
+export * from './types/index.ts';

@@ -1,11 +1,22 @@
-import type { Text } from '../i18n.ts';
+import type { Text } from '../utils/i18n.ts';
+import type { HttpStatusCode } from '../types/httpStatus.ts';
 
 interface ErrorOptions {
-  /** 全局唯一的错误ID */
+  /**
+   * 错误ID `unique`
+   */
   id: string;
-  /** HTTP 状态码 */
-  httpStatus: number;
-  /** 错误描述 */
+  /**
+   * ### HTTP 状态码
+   */
+  http: HttpStatusCode;
+  /**
+   * ### 错误名称
+   */
+  name: Text;
+  /**
+   * ### 错误描述 `i18n`
+   */
   description: Text;
 }
 

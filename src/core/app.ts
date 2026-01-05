@@ -1,13 +1,26 @@
-import type { Text } from '../i18n.ts';
+import type { Text } from '../utils/i18n.ts';
+import type { SecurityDefinition } from './security.ts';
+import type { ExternalDocsDefinition } from './external.ts';
+import type { ServerDefinition } from './server.ts';
+import type { TagDefinition } from './tag.ts';
+import { Endpoint } from './endpoint.ts';
 
 interface AppOptions {
-  /** API的标题 `i18n` */
+  /**
+   * ### API的标题 `i18n`
+   */
   title: Text;
-  /** API的简短描述 `i18n` `md` */
+  /**
+   * ### API的简短描述 `i18n` `md`
+   */
   description?: Text;
-  /** 服务条款的 URL `url` */
+  /**
+   * ### 服务条款的 URL `url`
+   */
   termsOfService?: string;
-  /** 公开 API 的联系信息 */
+  /**
+   * ### 公开 API 的联系信息
+   */
   contact?: {
     /** 联系人/组织的标识名称 */
     name?: string;
@@ -16,19 +29,45 @@ interface AppOptions {
     /** 联系人/组织的电子邮件地址 `email` */
     email?: string;
   };
-  /** 公开 API 的许可证信息 */
+  /**
+   * ### 公开 API 的许可证信息
+   */
   license?: {
     /** 用于 API 的许可证名称 */
     name: string;
     /** 用于 API 的许可证的 URL `url` */
     url: string;
   };
-  /** OpenAPI 文档的版本 */
+  /**
+   * ### OpenAPI 文档的版本
+   */
   version: string;
+  /**
+   * ### API 安全方案
+   *
+   * 声明可用于整个 API 的安全机制。值列表包括可使用的替代安全要求对象。只需满足其中一个安全要求对象即可授权请求。单个操作可以覆盖此定义。为了使安全可选，可以在数组中包含一个空的安全要求对象。
+   */
+  security?: SecurityDefinition[];
+  /**
+   * ### 服务器列表
+   *
+   * 指定 API 可用的服务器列表。
+   */
+  servers?: ServerDefinition[];
+  /**
+   * ### 额外的外部文档
+   */
+  externalDocs?: ExternalDocsDefinition;
+  /**
+   * ### 标签列表
+   */
+  tags?: TagDefinition[];
 }
 
 class AppDefinition {
   private options: AppOptions;
+  private endpoints: Endpoint[] = [];
+  
   constructor(options: AppOptions) {
     this.options = options;
   }
@@ -36,6 +75,66 @@ class AppDefinition {
   public get title() {
     return this.options.title;
   }
+  
+  public get description() {
+    return this.options.description;
+  }
+  
+  public get version() {
+    return this.options.version;
+  }
+  
+  public get termsOfService() {
+    return this.options.termsOfService;
+  }
+  
+  public get contact() {
+    return this.options.contact;
+  }
+  
+  public get license() {
+    return this.options.license;
+  }
+  
+  public get security() {
+    return this.options.security;
+  }
+  
+  public get servers() {
+    return this.options.servers;
+  }
+  
+  public get externalDocs() {
+    return this.options.externalDocs;
+  }
+  
+  public get tags() {
+    return this.options.tags;
+  }
+  
+  /**
+   * 添加端点
+   */
+  public addEndpoint(endpoint: Endpoint) {
+    this.endpoints.push(endpoint);
+    return this;
+  }
+  
+  /**
+   * 批量添加端点
+   */
+  public addEndpoints(endpoints: Endpoint[]) {
+    this.endpoints.push(...endpoints);
+    return this;
+  }
+  
+  /**
+   * 获取所有端点
+   */
+  public getEndpoints() {
+    return this.endpoints;
+  }
 }
 
+export { AppDefinition };
 export const defineApp = (options: AppOptions) => new AppDefinition(options);
