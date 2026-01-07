@@ -1,9 +1,8 @@
-import type { Text } from '../utils/i18n.ts';
+import { createDefaultText, type Text } from '../utils/i18n.ts';
 import type { SecurityDefinition } from './security.ts';
 import type { ExternalDocsDefinition } from './external.ts';
 import type { ServerDefinition } from './server.ts';
-import type { TagDefinition } from './tag.ts';
-import { EndpointDefinition } from './endpoint.ts';
+import type { EndpointDefinition } from './endpoint.ts';
 import { ZodStructType } from './_zod.ts';
 
 interface AppOptions {
@@ -15,6 +14,10 @@ interface AppOptions {
    * ### API的简短描述 `i18n` `md`
    */
   description?: Text;
+  /**
+   * ### 所有的端点定义
+   */
+  endpoints: EndpointDefinition[];
   /**
    * ### 服务条款的 URL `url`
    */
@@ -63,10 +66,6 @@ interface AppOptions {
    */
   externalDocs?: ExternalDocsDefinition;
   /**
-   * ### 标签列表
-   */
-  tags?: TagDefinition[];
-  /**
    * ### 统一处理所有端点的返回值结构体
    *
    * - 可通过此回调函数对所有端点的返回值结构体进行统一处理。
@@ -80,74 +79,28 @@ interface AppOptions {
 }
 
 class AppDefinition {
-  private options: AppOptions;
-  private endpoints: EndpointDefinition[] = [];
+  readonly title: Text;
+  readonly version: string;
+  readonly description: Text;
+  readonly endpoints: EndpointDefinition[];
+  readonly servers: ServerDefinition[];
+  readonly security: readonly SecurityDefinition[];
+  readonly termsOfService?: Readonly<AppOptions['termsOfService']>;
+  readonly contact?: Readonly<AppOptions['contact']>;
+  readonly license?: Readonly<AppOptions['license']>;
+  readonly externalDocs?: ExternalDocsDefinition;
 
   constructor(options: AppOptions) {
-    this.options = options;
-  }
-
-  public get title() {
-    return this.options.title;
-  }
-
-  public get description() {
-    return this.options.description;
-  }
-
-  public get version() {
-    return this.options.version;
-  }
-
-  public get termsOfService() {
-    return this.options.termsOfService;
-  }
-
-  public get contact() {
-    return this.options.contact;
-  }
-
-  public get license() {
-    return this.options.license;
-  }
-
-  public get security() {
-    return this.options.security;
-  }
-
-  public get servers() {
-    return this.options.servers;
-  }
-
-  public get externalDocs() {
-    return this.options.externalDocs;
-  }
-
-  public get tags() {
-    return this.options.tags;
-  }
-
-  /**
-   * 添加端点
-   */
-  public addEndpoint(endpoint: EndpointDefinition) {
-    this.endpoints.push(endpoint);
-    return this;
-  }
-
-  /**
-   * 批量添加端点
-   */
-  public addEndpoints(endpoints: EndpointDefinition[]) {
-    this.endpoints.push(...endpoints);
-    return this;
-  }
-
-  /**
-   * 获取所有端点
-   */
-  public getEndpoints() {
-    return this.endpoints;
+    this.title = options.title;
+    this.version = options.version;
+    this.description = options.description ?? createDefaultText('');
+    this.endpoints = options.endpoints;
+    this.servers = options.servers ?? [];
+    this.security = options.security ?? [];
+    this.termsOfService = options.termsOfService;
+    this.contact = options.contact;
+    this.license = options.license;
+    this.externalDocs = options.externalDocs;
   }
 }
 

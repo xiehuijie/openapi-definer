@@ -1,4 +1,5 @@
 import type { ZodStructType } from './_zod.ts';
+import { setMediaGenerator } from './_openapi.ts';
 
 interface JsonContentOptions {
   /**
@@ -17,7 +18,11 @@ export class MediaTypeDefinition {
   constructor(
     public readonly mime: MimeType,
     public readonly options: JsonContentOptions | FileContentOptions,
-  ) {}
+  ) {
+    setMediaGenerator(this, (_locale) => {
+      return {};
+    });
+  }
 }
 
 export const defineJsonContent = (options: JsonContentOptions) => new MediaTypeDefinition('application/json', options);

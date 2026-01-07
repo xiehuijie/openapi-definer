@@ -1,7 +1,7 @@
 import { OpenAPIV3_1 } from 'openapi-types';
 import type { SecurityType, ParameterLocation } from '../types/openapi.ts';
 import type { Text } from '../utils/i18n.ts';
-import { setSecurityFn } from './_openapi.ts';
+import { setSecurityGenerator } from './_openapi.ts';
 
 interface BaseOptions {
   /**
@@ -68,7 +68,7 @@ export class SecurityDefinition {
     public readonly type: SecurityType,
     private readonly options: SecurityOptions,
   ) {
-    setSecurityFn(this, (locale) => {
+    setSecurityGenerator(this, (locale) => {
       const result = { type: this.type } as OpenAPIV3_1.SecuritySchemeObject;
       switch (result.type) {
         case 'apiKey': {

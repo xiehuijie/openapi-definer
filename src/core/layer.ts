@@ -64,34 +64,43 @@ export class LayerDefinition {
   public readonly path: string;
 
   /** {@link LayerOptions.security 共同安全配置} */
-  public readonly security: readonly SecurityDefinition[];
+  public readonly security?: readonly SecurityDefinition[];
 
   /** {@link LayerOptions.tags 共同标签} */
-  public readonly tags: readonly TagDefinition[];
+  public readonly tags?: readonly TagDefinition[];
 
   /** {@link LayerOptions.externalDocs 共同外部文档} */
-  public readonly externalDocs: ExternalDocsDefinition;
+  public readonly externalDocs?: ExternalDocsDefinition;
 
   /** {@link LayerOptions.parameters 共同请求参数} */
-  public readonly parameters: CommonParameters;
+  public readonly parameters: Required<CommonParameters>;
 
   constructor(options: LayerOptions) {
-    const upper = options.layer === void 0 ? none : options.layer;
-
     this.id = options.id;
-    this.path = `${upper.path}${options.path}`;
-    this.security = options.security ?? upper.security;
-    this.tags = [...upper.tags, ...(options.tags ?? [])];
-    this.externalDocs = options.externalDocs ?? upper.externalDocs;
-    this.parameters = {
-      query: { ...upper.parameters?.query, ...options.parameters?.query },
-      header: { ...upper.parameters?.header, ...options.parameters?.header },
-      cookie: { ...upper.parameters?.cookie, ...options.parameters?.cookie },
-    };
+
+    if (options.id === internal) {
+      this.path = options.path;
+      this.security = [];
+      this.tags = [];
+      this.parameters = { path: {}, query: {}, header: {}, cookie: {} };
+    } else {
+      const upper = options.layer === void 0 ? __INTERNAL_LAYER__ : options.layer;
+      this.path = upper.path + options.path;
+      this.security = options.security ?? upper.security;
+      this.externalDocs = options.externalDocs ?? upper.externalDocs;
+      this.tags = options.tags !== void 0 || upper.tags !== void 0 ? [...(upper.tags ?? []), ...(options.tags ?? [])] : void 0;
+      this.parameters = {
+        path: { ...upper.parameters.path, ...options.parameters?.path },
+        query: { ...upper.parameters.query, ...options.parameters?.query },
+        header: { ...upper.parameters.header, ...options.parameters?.header },
+        cookie: { ...upper.parameters.cookie, ...options.parameters?.cookie },
+      };
+    }
   }
 }
 
-const __INTERNAL__ = '__INTERNAL__';
-const none = new LayerDefinition({ id: __INTERNAL__, path: '' });
+const internal = Symbol('__INTERNAL_LAYER__') as unknown as string;
+
+export const __INTERNAL_LAYER__ = new LayerDefinition({ id: internal, path: '' });
 
 export const defineLayer = (options: LayerOptions) => new LayerDefinition(options);
