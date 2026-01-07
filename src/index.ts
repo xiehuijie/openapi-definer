@@ -25,5 +25,4 @@ export {
   defineJsonContent,
   defineFileContent,
 } from './core/index.ts';
-export * from './utils/index.ts';
-export * from './types/index.ts';
+export { createTextDefiner } from './utils/index.ts';

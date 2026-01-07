@@ -1,8 +1,6 @@
-type TextInput<T extends string, D extends T> =
-  | (Record<D, string> & Partial<Record<Exclude<T, D>, string>>)
-  | string;
+type TextInput<T extends string, D extends T> = (Record<D, string> & Partial<Record<Exclude<T, D>, string>>) | string;
 
-export type Text<T extends string = string> = Record<T, string>;
+export type Text<T extends string = string> = Readonly<Record<T, string>>;
 
 /**
  * ### 创建文案定义器
@@ -11,17 +9,14 @@ export type Text<T extends string = string> = Record<T, string>;
  * @param default_language 输入默认语言 {@link languages `languages`} 中的一个
  * @returns
  */
-export const createTextDefiner = <T extends string, D extends T>(
-  languages: readonly T[],
-  default_language: D
-) => {
+export const createTextDefiner = <T extends string, D extends T>(languages: readonly T[], default_language: D) => {
   return (input: TextInput<T, D>): Text<T> => {
-    type K = keyof TextInput<T, D>;
-
-    return languages.reduce((acc, lang) => {
-      acc[lang] =
-        typeof input === 'string' ? input : (input[lang as K] ?? input[default_language as K]);
-      return acc;
-    }, {} as Text<T>);
+    if (typeof input === 'string') {
+      return createDefaultText(input);
+    } else {
+      return new Proxy<Text<T>>(input as Text<T>, { get: (_, p: keyof TextInput<T, D>) => _[p] ?? _[default_language] });
+    }
   };
 };
+
+export const createDefaultText = (text: string) => new Proxy<Text>({}, { get: () => text });

@@ -15,7 +15,7 @@ export const Method = {
   OPTIONS: 'OPTIONS',
   /** TRACE */
   TRACE: 'TRACE',
-};
+} as const;
 export type Method = (typeof Method)[keyof typeof Method];
 
 export const SecurityType = {
