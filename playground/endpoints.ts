@@ -1,8 +1,9 @@
-import { defineEndpoint, defineJsonContent } from 'openapi-definer';
-import { userLayer, t, Signature } from './common';
-import { UserAlreadyExists, UserNotFound } from './errors';
-import { USER_ID } from './fields';
-import { CreateUserRequest, User } from './structs';
+import { defineEndpoint, defineJsonContent } from '../dist/index.js';
+import { userLayer, t, Signature } from './common.ts';
+import { UserAlreadyExists, UserNotFound } from './errors.ts';
+import { USER_ID } from './fields.ts';
+import { CreateUserRequest, User } from './structs.ts';
+import { z } from 'zod';
 
 const createUser = defineEndpoint({
   id: 'createUser',
@@ -69,6 +70,30 @@ const login = defineEndpoint({
   path: '/login',
   method: 'POST',
   security: [Signature],
+  parameters: {
+    body: {
+      content: defineJsonContent({
+        schema: z.object({
+          username: z.string(),
+          password: z.string(),
+        }),
+      }),
+    },
+  },
+  responses: [
+    {
+      status: 200,
+      description: t({
+        'zh-CN': '登录成功',
+        'en-US': 'Login Successful',
+      }),
+      content: defineJsonContent({
+        schema: z.object({
+          token: z.string(),
+        }),
+      }),
+    },
+  ],
 });
 
 export const endpoints = [createUser, getUser, login];

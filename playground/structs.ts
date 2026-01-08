@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { defineStruct } from 'openapi-definer';
+import { defineStruct } from '../dist/index.js';
 import { t } from './common.ts';
 import { randomUUID } from 'crypto';
 import { USER_ID, USER_NAME, GENDER } from './fields.ts';

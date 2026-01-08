@@ -1,4 +1,4 @@
-import { createTextDefiner, defineTag, defineLayer, defineApiKeySecurity } from 'openapi-definer';
+import { createTextDefiner, defineTag, defineLayer, defineApiKeySecurity } from '../dist/index.js';
 
 export const t = createTextDefiner(['zh-CN', 'en-US'], 'zh-CN');
 

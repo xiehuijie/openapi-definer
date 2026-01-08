@@ -1,4 +1,4 @@
-import { defineField } from 'openapi-definer';
+import { defineField } from '../dist/index.js';
 import { t } from './common.ts';
 import { z } from 'zod';
 import { randomUUID } from 'crypto';

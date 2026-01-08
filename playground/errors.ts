@@ -1,4 +1,4 @@
-import { defineError } from 'openapi-definer';
+import { defineError } from '../dist/index.js';
 import { t } from './common.ts';
 
 export const UserNotFound = defineError({
