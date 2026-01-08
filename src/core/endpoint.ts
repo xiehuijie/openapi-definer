@@ -1,9 +1,9 @@
 import { createDefaultText, type Text } from '../utils/i18n.ts';
 import type { Method, ParameterLocation } from '../types/openapi.ts';
 import type { TagDefinition } from './tag.ts';
-import type { SecurityDefinition } from './security.ts';
+import type { SecurityRequireDefinition } from './security.ts';
 import type { ExternalDocsDefinition } from './external.ts';
-import { getJsonSchemaMeta, getJsonSchemaRef, ZodBasicStruct, type ZodFieldType } from './_zod.ts';
+import { getJsonSchemaMeta, getJsonSchemaSpec, ZodBasicStruct, type ZodFieldType } from './_openapi.ts';
 import type { ErrorDefinition } from './error.ts';
 import type { HttpStatusCode } from '../types/httpStatus.ts';
 import { type MediaTypeDefinition, defineJsonContent } from './media.ts';
@@ -11,11 +11,16 @@ import { __INTERNAL_LAYER__, LayerDefinition } from './layer.ts';
 import {
   getMediaSchema,
   getResponseDescription,
-  getTagNames,
+  getTagNameSpec,
   setEndpointGenerator,
   setParameterGenerator,
   setRequestGenerator,
   setResponseGenerator,
+  getParameterSchema,
+  getRequestSchema,
+  getResponseSchema,
+  getExternalDocsSchema,
+  getSecurityRequireSpec,
 } from './_openapi.ts';
 import { OpenAPIV3_1 } from 'openapi-types';
 import z from 'zod';
@@ -170,7 +175,7 @@ interface EndpointOptions<M extends Method = Method> {
    * ---
    * 可通过此属性为此端点覆盖应用层面的安全要求数组。若此端点不需要任何安全措施，可以将此属性设置为空数组。
    */
-  security?: SecurityDefinition[];
+  security?: SecurityRequireDefinition[];
   /**
    * ### 是否已废弃
    */
@@ -200,7 +205,7 @@ export class ParametersDefinition {
         in: this.location,
         description: schema_meta.description,
         required: schema_meta.default === void 0,
-        schema: getJsonSchemaRef(this.schema),
+        schema: getJsonSchemaSpec(this.schema),
       };
     });
   }
@@ -293,6 +298,7 @@ export class ResponsesDefinition {
       const schema = z.union(errors.filter((e) => e.http === status).map((e) => e.schema as ZodBasicStruct));
       contents[status] = [defineJsonContent({ schema })];
     }
+    this.contents = contents;
 
     setResponseGenerator(this, (locale) => {
       return this.status.reduce((acc, status) => {
@@ -321,7 +327,7 @@ export class EndpointDefinition {
   readonly request: RequestDefinition;
   readonly tags: readonly TagDefinition[];
   readonly externalDocs?: ExternalDocsDefinition;
-  readonly security?: readonly SecurityDefinition[];
+  readonly security?: readonly SecurityRequireDefinition[];
   readonly deprecated: boolean;
   readonly errors: readonly ErrorDefinition[];
 
@@ -366,14 +372,23 @@ export class EndpointDefinition {
     this.deprecated = options.deprecated || false;
     this.errors = options.errors || [];
     this.parameters = normalizeParamters();
-    this.request = new RequestDefinition((options.parameters as BodyParameter)?.body);
+    this.request = new RequestDefinition(
+      ['GET', 'DELETE', 'HEAD'].includes(options.method) ? { required: false, content: [] } : (options.parameters as BodyParameter)?.body,
+    );
     this.responses = normalizeResponses();
 
-    setEndpointGenerator(this, (app, locale) => {
+    setEndpointGenerator(this, (locale) => {
       return {
-        tags: getTagNames(app, this.tags),
+        operationId: this.id,
+        tags: getTagNameSpec(this.tags),
         summary: this.title[locale],
         description: this.description[locale],
+        parameters: this.parameters.length > 0 ? this.parameters.map((p) => getParameterSchema(p, locale)) : void 0,
+        requestBody: this.request.content.length > 0 ? getRequestSchema(this.request, locale) : void 0,
+        responses: getResponseSchema(this.responses, locale),
+        externalDocs: this.externalDocs ? getExternalDocsSchema(this.externalDocs, locale) : void 0,
+        security: this.security ? getSecurityRequireSpec(this.security) : void 0,
+        deprecated: this.deprecated,
       };
     });
   }

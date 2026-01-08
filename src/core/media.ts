@@ -1,30 +1,45 @@
-import type { ZodStructType } from './_zod.ts';
-import { setMediaGenerator } from './_openapi.ts';
+import { type ZodStructType, getJsonSchemaSpec, setMediaGenerator } from './_openapi.ts';
 
-interface JsonContentOptions {
+export interface JsonContentOptions {
   /**
    * ### JSON 内容的模式定义
    */
   schema: ZodStructType;
 }
 
-interface FileContentOptions {}
+export interface FileContentOptions {}
 
 type MimeType = 'application/json' | 'application/octet-stream';
 
-export class MediaTypeDefinition {
-  constructor(mime: 'application/json', options: JsonContentOptions);
-  constructor(mime: 'application/octet-stream', options: FileContentOptions);
+type MediaTypeOptions = JsonContentOptions | FileContentOptions;
+
+export class MediaTypeDefinition<M extends MimeType = MimeType, T extends MediaTypeOptions = MediaTypeOptions> {
   constructor(
-    public readonly mime: MimeType,
-    public readonly options: JsonContentOptions | FileContentOptions,
+    /** 媒体类型 */
+    public readonly mime: M,
+    /** 媒体内容选项 */
+    public readonly options: T,
   ) {
     setMediaGenerator(this, (_locale) => {
-      return {};
+      switch (this.mime) {
+        case 'application/json':
+          return {
+            schema: getJsonSchemaSpec((this.options as JsonContentOptions).schema),
+          };
+        case 'application/octet-stream':
+          return {
+            schema: {
+              type: 'string',
+              format: 'binary',
+            },
+          };
+        default:
+          throw new Error(`Unsupported mime type: ${this.mime}`);
+      }
     });
   }
 }
 
 export const defineJsonContent = (options: JsonContentOptions) => new MediaTypeDefinition('application/json', options);
 
-export const defineFileContent = () => new MediaTypeDefinition('application/octet-stream', {});
+export const defineFileContent = (options: FileContentOptions) => new MediaTypeDefinition('application/octet-stream', options);

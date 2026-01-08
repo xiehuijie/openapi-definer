@@ -5,6 +5,10 @@ import { setSecurityGenerator } from './_openapi.ts';
 
 interface BaseOptions {
   /**
+   * 安全方案ID `unique`
+   */
+  id: string;
+  /**
    * 安全方案的简短描述 `md`
    */
   description: Text;
@@ -56,10 +60,24 @@ interface OpenIdConnectOptions extends BaseOptions {
 export type SecurityOptions = ApiKeyOptions | HttpOptions | OAuth2Options | OpenIdConnectOptions;
 
 /**
+ * ### 安全需求定义
+ */
+export class SecurityRequireDefinition {
+  constructor(
+    /** 安全方案 */
+    readonly security: SecurityDefinition,
+    /** 安全需求 */
+    readonly requirements: readonly string[],
+  ) {}
+}
+
+/**
  * ### 安全方案定义
- * ---
  */
 export class SecurityDefinition {
+  /** 安全方案ID */
+  readonly id: string;
+
   constructor(type: 'apiKey', options: ApiKeyOptions);
   constructor(type: 'http', options: HttpOptions);
   constructor(type: 'oauth2', options: OAuth2Options);
@@ -68,6 +86,7 @@ export class SecurityDefinition {
     public readonly type: SecurityType,
     private readonly options: SecurityOptions,
   ) {
+    this.id = options.id;
     setSecurityGenerator(this, (locale) => {
       const result = { type: this.type } as OpenAPIV3_1.SecuritySchemeObject;
       switch (result.type) {
@@ -83,6 +102,15 @@ export class SecurityDefinition {
       }
       return result;
     });
+  }
+  /**
+   * ### 定义安全需求
+   * ---
+   * @param requirements 安全需求，仅适用于 OAuth2 和 OpenID Connect 类型
+   */
+  require(...requirements: string[]) {
+    if(this.type === 'apiKey' || this.type === 'http') {}
+    return new SecurityRequireDefinition(this, requirements);
   }
 }
 /**

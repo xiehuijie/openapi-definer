@@ -26,6 +26,10 @@ export class ServerDefinition {
   get url() {
     return this.options.url;
   }
+
+  get description() {
+    return this.options.description;
+  }
 }
 
 export const defineServer = (options: ServerOptions) => new ServerDefinition(options);

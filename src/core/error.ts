@@ -1,6 +1,6 @@
 import { type Text, createDefaultText } from '../utils/i18n.ts';
 import type { HttpStatusCode } from '../types/httpStatus.ts';
-import type { ZodStructType } from './_zod.ts';
+import type { ZodStructType } from './_openapi.ts';
 import { z } from 'zod';
 
 interface ErrorOptions {

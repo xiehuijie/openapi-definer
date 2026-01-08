@@ -1,4 +1,4 @@
-import type { SecurityDefinition } from './security.ts';
+import type { SecurityRequireDefinition } from './security.ts';
 import type { TagDefinition } from './tag.ts';
 import type { ExternalDocsDefinition } from './external.ts';
 import type { CommonParameters } from './endpoint.ts';
@@ -26,12 +26,12 @@ interface LayerOptions {
    */
   layer?: LayerDefinition;
   /**
-   * ### 共同安全配置
+   * ### 共同安全需求配置
    * ---
-   * - 适用于此层内所有接口的安全配置。
-   * - 将会完全覆盖已在上层中定义的安全配置。
+   * - 适用于此层内所有接口的安全需求配置。
+   * - 将会完全覆盖已在上层中定义的安全需求配置。
    */
-  security?: SecurityDefinition[];
+  security?: SecurityRequireDefinition[];
   /**
    * ### 共同标签
    * ---
@@ -64,7 +64,7 @@ export class LayerDefinition {
   public readonly path: string;
 
   /** {@link LayerOptions.security 共同安全配置} */
-  public readonly security?: readonly SecurityDefinition[];
+  public readonly security?: readonly SecurityRequireDefinition[];
 
   /** {@link LayerOptions.tags 共同标签} */
   public readonly tags?: readonly TagDefinition[];
@@ -103,4 +103,10 @@ const internal = Symbol('__INTERNAL_LAYER__') as unknown as string;
 
 export const __INTERNAL_LAYER__ = new LayerDefinition({ id: internal, path: '' });
 
+/**
+ * ### 定义层
+ * ---
+ * - 层可用于对具有共同路径前缀、安全需求、标签或外部文档的端点进行分组和组织。
+ * - 必填：{@link LayerOptions.id `id`} {@link LayerOptions.path `path`}
+ */
 export const defineLayer = (options: LayerOptions) => new LayerDefinition(options);

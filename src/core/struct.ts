@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import type { Text } from '../utils/i18n.ts';
-import type { ZodStructType } from './_zod.ts';
-import { setJsonSchemaMeta } from './_zod.ts';
+import { type ZodStructType, setJsonSchemaMeta } from './_openapi.ts';
 
 interface StructOptions<T extends ZodStructType> {
   /**

@@ -1,9 +1,9 @@
 import { createDefaultText, type Text } from '../utils/i18n.ts';
-import type { SecurityDefinition } from './security.ts';
+import type { SecurityRequireDefinition } from './security.ts';
 import type { ExternalDocsDefinition } from './external.ts';
 import type { ServerDefinition } from './server.ts';
 import type { EndpointDefinition } from './endpoint.ts';
-import { ZodStructType } from './_zod.ts';
+import type { ZodStructType } from './_openapi.ts';
 
 interface AppOptions {
   /**
@@ -47,14 +47,14 @@ interface AppOptions {
    */
   version: string;
   /**
-   * ### API 安全方案
+   * ### 全局安全方案需求
    *
    * - 声明可用于整个 API 的安全机制。
    * - 值列表包括可使用的替代安全要求对象。
    * - 只需满足其中一个安全要求对象即可授权请求。
-   * - 可在单端点中覆盖此定义。
+   * - 可在单端点或层中覆盖此处定义。
    */
-  security?: SecurityDefinition[];
+  security?: SecurityRequireDefinition[];
   /**
    * ### 服务器列表
    *
@@ -78,13 +78,13 @@ interface AppOptions {
   unifiyResponseStruct?: (id: string, struct: ZodStructType) => ZodStructType;
 }
 
-class AppDefinition {
+export class AppDefinition {
   readonly title: Text;
   readonly version: string;
   readonly description: Text;
   readonly endpoints: EndpointDefinition[];
   readonly servers: ServerDefinition[];
-  readonly security: readonly SecurityDefinition[];
+  readonly security: readonly SecurityRequireDefinition[];
   readonly termsOfService?: Readonly<AppOptions['termsOfService']>;
   readonly contact?: Readonly<AppOptions['contact']>;
   readonly license?: Readonly<AppOptions['license']>;
@@ -102,7 +102,25 @@ class AppDefinition {
     this.license = options.license;
     this.externalDocs = options.externalDocs;
   }
+
+  private generate(locale: string, getEndpointSchema: (def: EndpointDefinition, app: AppDefinition, locale: string) => any) {
+    const paths: Record<string, Record<string, any>> = {};
+
+    // 遍历所有端点，按路径和方法组织
+    for (const endpoint of this.endpoints) {
+      if (!paths[endpoint.path]) {
+        paths[endpoint.path] = {};
+      }
+      paths[endpoint.path][endpoint.method.toLowerCase()] = getEndpointSchema(endpoint, this, locale);
+    }
+
+    return paths;
+  }
+
+  /** 获取路径对象生成器 */
+  getPathsGenerator() {
+    return this.generate.bind(this);
+  }
 }
 
-export { AppDefinition };
 export const defineApp = (options: AppOptions) => new AppDefinition(options);
