@@ -1,15 +1,13 @@
-import { Command } from 'commander';
 import { writeFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 
-export function registerInit(program: Command) {
-  program
-    .command('init')
-    .description('Initialize a new API definition project')
-    .option('-d, --dir <directory>', 'Target directory', '.')
-    .action(async (options) => {
-      console.log('🚀 Initializing new API definition project...');
-      console.log('Directory:', options.dir);
+interface InitOptions {
+  dir: string;
+}
+
+export default async function initAction(options: InitOptions) {
+  console.log('🚀 Initializing new API definition project...');
+  console.log('Directory:', options.dir);
 
       const targetDir = resolve(options.dir);
 
@@ -61,17 +59,16 @@ const helloEndpoint = defineEndpoint({
 app.addEndpoint(helloEndpoint);
 `;
 
-      try {
-        writeFileSync(join(targetDir, 'api.ts'), exampleContent);
-        console.log('✅ Created api.ts');
-        console.log('');
-        console.log('Next steps:');
-        console.log('  1. Edit api.ts to define your API');
-        console.log('  2. Run "openapi-definer serve api.ts" to preview documentation');
-        console.log('  3. Run "openapi-definer export api.ts" to generate OpenAPI spec');
-      } catch (error) {
-        console.error('❌ Error initializing project:', error);
-        process.exit(1);
-      }
-    });
+  try {
+    writeFileSync(join(targetDir, 'api.ts'), exampleContent);
+    console.log('✅ Created api.ts');
+    console.log('');
+    console.log('Next steps:');
+    console.log('  1. Edit api.ts to define your API');
+    console.log('  2. Run "openapi-definer serve api.ts" to preview documentation');
+    console.log('  3. Run "openapi-definer export api.ts" to generate OpenAPI spec');
+  } catch (error) {
+    console.error('❌ Error initializing project:', error);
+    process.exit(1);
+  }
 }
