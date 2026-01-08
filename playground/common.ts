@@ -17,6 +17,7 @@ export const userLayer = defineLayer({
 });
 
 export const Authorization = defineApiKeySecurity({
+  id: 'Authorization',
   in: 'header',
   name: 'Authorization',
   description: t({
@@ -26,6 +27,7 @@ export const Authorization = defineApiKeySecurity({
 });
 
 export const Signature = defineApiKeySecurity({
+  id: 'Signature',
   in: 'header',
   name: 'Signature',
   description: t({

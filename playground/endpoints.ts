@@ -69,7 +69,7 @@ const login = defineEndpoint({
   id: 'login',
   path: '/login',
   method: 'POST',
-  security: [Signature],
+  security: [Signature.require()],
   parameters: {
     body: {
       content: defineJsonContent({

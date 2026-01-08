@@ -13,5 +13,5 @@ export default defineApp({
     'en-US': 'This is an example API documentation',
   }),
   endpoints: [...endpoints],
-  security: [Authorization, Signature],
+  security: [Authorization.require(), Signature.require()],
 });
