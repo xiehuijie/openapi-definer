@@ -12,7 +12,7 @@ import { z } from 'zod';
 // ----------------------------------------------------------- Zod 类型定义 -----------------------------------------------------------
 export type ZodBasicField = z.ZodString | z.ZodStringFormat | z.ZodNumber | z.ZodNumberFormat | z.ZodBoolean | z.ZodEnum | z.ZodNull;
 export type ZodBasicStruct = z.ZodObject<any> | z.ZodArray<ZodFieldType | z.ZodObject<any> | z.ZodArray<any>>;
-export type ZodFieldType = ZodBasicField | z.ZodUnion<ZodBasicField[]>;
+export type ZodFieldType = ZodBasicField | z.ZodUnion<ZodBasicField[]> | z.ZodLiteral;
 export type ZodStructType = ZodBasicStruct | z.ZodUnion<ZodBasicStruct[]>;
 
 // --------------------------------------------------------- JSON Schema 元数据 ---------------------------------------------------------
@@ -180,9 +180,7 @@ const generateOpenAPIDocument = (locale: string): OpenAPIV3_1.Document => {
   });
 
   const getServersSpec = (): OpenAPIV3_1.ServerObject[] | undefined => {
-    return app.servers.length > 0
-      ? app.servers.map((server) => ({ url: server.url, description: server.description?.[locale] }))
-      : undefined;
+    return app.servers.length > 0 ? app.servers.map((server) => ({ url: server.url, description: server.description?.[locale] })) : undefined;
   };
 
   const getPathsSpec = (): OpenAPIV3_1.PathsObject => {
