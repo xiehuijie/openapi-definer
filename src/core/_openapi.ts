@@ -52,10 +52,95 @@ export const getJsonSchemaMeta = (schema: ZodFieldType | ZodStructType, locale: 
 /** 检查schema是否有JSON Schema元数据 */
 export const hasJsonSchemaMeta = (schema: ZodFieldType | ZodStructType): boolean => json_schema_meta.has(schema);
 
-/** 将 Zod Schema 转换为 JSON Schema */
-export const zodToJsonSchema = (schema: ZodFieldType | ZodStructType, locale: string): any => {
+/** 递归地为 JSON Schema 属性添加字段元数据，并修复数组项引用 */
+const enrichJsonSchemaProperties = (properties: Record<string, any>, zodShape: Record<string, any>, locale: string): void => {
+  for (const [key, propSchema] of Object.entries(properties)) {
+    const zodFieldSchema = zodShape[key];
+    
+    // 处理字段级别的元数据（直接定义的字段）
+    if (zodFieldSchema && json_schema_meta.has(zodFieldSchema)) {
+      const meta = getJsonSchemaMeta(zodFieldSchema, locale);
+      if (meta.title) propSchema.title = meta.title;
+      if (meta.description) propSchema.description = meta.description;
+      if (meta.default !== undefined) propSchema.default = meta.default;
+      if (meta.examples) propSchema.examples = meta.examples;
+      if (meta.deprecated) propSchema.deprecated = meta.deprecated;
+    }
+    
+    // 处理数组项 - 检查是否应该使用引用
+    if (propSchema.type === 'array' && propSchema.items && zodFieldSchema?._def?.type === 'array') {
+      const arrayElementSchema = zodFieldSchema._def.element;
+      
+      // 如果数组元素有注册的 ID，替换为引用
+      const elementId = schema2id.get(arrayElementSchema);
+      if (currentApp && elementId !== undefined) {
+        _get(app_schema_map).add(arrayElementSchema);
+        propSchema.items = { $ref: `#/components/schemas/${elementId}` };
+      } else {
+        // 处理数组元素是字段的情况
+        if (arrayElementSchema && json_schema_meta.has(arrayElementSchema)) {
+          const meta = getJsonSchemaMeta(arrayElementSchema, locale);
+          if (meta.title) propSchema.items.title = meta.title;
+          if (meta.description) propSchema.items.description = meta.description;
+          if (meta.default !== undefined) propSchema.items.default = meta.default;
+          if (meta.examples) propSchema.items.examples = meta.examples;
+          if (meta.deprecated) propSchema.items.deprecated = meta.deprecated;
+        }
+        
+        // 递归处理数组中的对象
+        if (propSchema.items.type === 'object' && propSchema.items.properties) {
+          let itemShape = null;
+          
+          if (arrayElementSchema?._def?.shape) {
+            itemShape = arrayElementSchema._def.shape;
+          }
+          
+          if (itemShape) {
+            enrichJsonSchemaProperties(propSchema.items.properties, itemShape, locale);
+          }
+        }
+      }
+    }
+    
+    // 递归处理嵌套对象（结构体）
+    else if (propSchema.type === 'object' && propSchema.properties) {
+      let nestedShape = null;
+      
+      // 首先尝试从当前字段的 zod schema 中获取 shape
+      if (zodFieldSchema?._def?.shape) {
+        nestedShape = zodFieldSchema._def.shape;
+      }
+      
+      if (nestedShape) {
+        enrichJsonSchemaProperties(propSchema.properties, nestedShape, locale);
+      }
+    }
+  }
+};
+
+/** 自定义 Zod 到 JSON Schema 转换，正确处理数组项的引用 */
+const customZodToJsonSchema = (schema: ZodFieldType | ZodStructType): any => {
+  // 检查是否为数组类型
+  if (schema._def.type === 'array') {
+    const elementSchema = schema._def.element;
+    return {
+      type: 'array',
+      items: getJsonSchemaSpec(elementSchema)
+    };
+  }
+  
+  // 对于其他类型，使用标准转换但不递归调用 getJsonSchemaSpec
   const jsonSchema = schema.toJSONSchema({ target: 'openapi' });
   delete jsonSchema.$schema;
+  return jsonSchema;
+};
+
+/** 将 Zod Schema 转换为 JSON Schema */
+export const zodToJsonSchema = (schema: ZodFieldType | ZodStructType, locale: string): any => {
+  // 使用自定义转换来正确处理引用
+  const jsonSchema = customZodToJsonSchema(schema);
+  
+  // 处理顶级 schema 的元数据
   if (json_schema_meta.has(schema)) {
     const meta = getJsonSchemaMeta(schema, locale);
     if (meta.title) jsonSchema.title = meta.title;
@@ -64,6 +149,12 @@ export const zodToJsonSchema = (schema: ZodFieldType | ZodStructType, locale: st
     if (meta.examples) jsonSchema.examples = meta.examples;
     if (meta.deprecated) jsonSchema.deprecated = meta.deprecated;
   }
+  
+  // 如果是对象类型，递归处理属性的字段元数据
+  if (jsonSchema.type === 'object' && jsonSchema.properties && (schema as any)._def?.shape) {
+    enrichJsonSchemaProperties(jsonSchema.properties, (schema as any)._def.shape, locale);
+  }
+  
   return jsonSchema;
 };
 
@@ -188,6 +279,7 @@ export const getEndpointSchema = (def: EndpointDefinition, locale: string) => en
 
 // ---------------------------------------------------------- APP 依赖收集 ----------------------------------------------------------
 let currentApp: AppDefinition | null = null;
+let currentLocale: string = 'en';
 /** 以当前正在生成的 App 为键，从对应映射中获取对应的值 */
 const _get = <T>(map: Map<AppDefinition, T>) => {
   if (currentApp === null) throw new Error('No current generating App.');
@@ -215,8 +307,8 @@ export const getJsonSchemaSpec = (schema: ZodFieldType | ZodStructType): { $ref:
     _get(app_schema_map).add(schema);
     return { $ref: `#/components/schemas/${id}` };
   } else {
-    // 当没有注册ID时，生成内联schema但不包含元数据（会在引用时处理）
-    return schema.toJSONSchema({ target: 'openapi' });
+    // 当没有注册ID时，使用增强版的 zodToJsonSchema 来生成内联schema
+    return zodToJsonSchema(schema, currentLocale);
   }
 };
 
@@ -401,11 +493,13 @@ const makeDefaultResponseDescMap = () => {
 /** 为应用生成 OpenAPI 文档 */
 export const _generate = (app: AppDefinition, locale: string = 'en'): OpenAPIV3_1.Document => {
   try {
-    // 设置当前正在生成的 App，以便在生成过程中自动注册 schema
+    // 设置当前正在生成的 App 和 locale，以便在生成过程中自动注册 schema
     currentApp = app;
+    currentLocale = locale;
     return generateOpenAPIDocument(locale);
   } finally {
     currentApp = null;
+    currentLocale = 'en';
   }
 };
 
