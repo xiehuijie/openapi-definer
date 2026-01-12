@@ -5,6 +5,7 @@ import { SecurityDefinition, SecurityRequireDefinition } from './security.ts';
 import type { ExternalDocsDefinition } from './external.ts';
 import type { EndpointDefinition, ParametersDefinition, RequestDefinition, ResponsesDefinition } from './endpoint.ts';
 import type { MediaTypeDefinition } from './media.ts';
+import type { ErrorDefinition } from './error.ts';
 import { HttpStatusCode } from '../types/httpStatus.ts';
 import { TagDefinition } from './tag.ts';
 import { z } from 'zod';
@@ -47,6 +48,9 @@ export const getJsonSchemaMeta = (schema: ZodFieldType | ZodStructType, locale: 
   if (!json_schema_meta.has(schema)) throw new Error('JsonSchemaMeta not found');
   return { id: schema2id.get(schema)!, ...json_schema_meta.get(schema)!(locale) };
 };
+
+/** 检查schema是否有JSON Schema元数据 */
+export const hasJsonSchemaMeta = (schema: ZodFieldType | ZodStructType): boolean => json_schema_meta.has(schema);
 
 /** 将 Zod Schema 转换为 JSON Schema */
 export const zodToJsonSchema = (schema: ZodFieldType | ZodStructType, locale: string): any => {
@@ -117,7 +121,62 @@ const responses_generator_map = new Map<ResponsesDefinition, ResponsesSchemaGene
 /** 配置响应体的`OpenAPI Schema`生成函数 */
 export const setResponseGenerator = (def: ResponsesDefinition, fn: ResponsesSchemaGenerator) => responses_generator_map.set(def, fn);
 /** 获取响应体的`OpenAPI Schema` */
-export const getResponseSchema = (def: ResponsesDefinition, locale: string) => responses_generator_map.get(def)!(locale);
+export const getResponseSchema = (def: ResponsesDefinition, locale: string) => {
+  // 获取原始响应Schema
+  const originalResponse = responses_generator_map.get(def)!(locale);
+  
+  // 查找对应的端点以确定是否需要自动添加错误
+  if (currentApp) {
+    const endpoint = findEndpointByResponsesDefinition(def, currentApp);
+    if (endpoint) {
+      // 获取端点的所有错误（显式 + 自动）
+      const allErrors = getAllErrorsForEndpoint(endpoint, currentApp);
+      
+      // 如果有自动错误需要添加，合并到响应中
+      if (allErrors.length > 0) {
+        const errorsByStatus = new Map<number, typeof allErrors>();
+        
+        // 按状态码分组自动错误
+        for (const error of allErrors) {
+          if (!errorsByStatus.has(error.http)) {
+            errorsByStatus.set(error.http, []);
+          }
+          // 检查是否已经包含在原始响应中
+          if (!(error.http in originalResponse)) {
+            errorsByStatus.get(error.http)!.push(error);
+          }
+        }
+        
+        // 为每个状态码生成错误响应
+        for (const [status, errors] of errorsByStatus) {
+          if (errors.length > 0 && !(status in originalResponse)) {
+            // 创建错误Schema，如果多个错误则用union
+            const errorSchema = errors.length === 1 
+              ? errors[0].schema 
+              : z.union(errors.map(e => e.schema as any) as [any, any, ...any[]]);
+            
+            // 应用统一错误响应结构（如果配置了）
+            const finalErrorSchema = currentApp.unifyErrorResponseStruct 
+              ? currentApp.unifyErrorResponseStruct(endpoint, errorSchema as any)
+              : errorSchema;
+            
+            // 添加到响应中
+            originalResponse[status] = {
+              description: getResponseDescription(status as any, locale),
+              content: {
+                'application/json': {
+                  schema: getJsonSchemaSpec(finalErrorSchema)
+                }
+              }
+            };
+          }
+        }
+      }
+    }
+  }
+  
+  return originalResponse;
+};
 
 // ------------------------------------------------------- 端点 / 接入点 / 接口 ------------------------------------------------------
 type EndpointSchemaGenerator = (locale: string) => OpenAPIV3_1.OperationObject;
@@ -156,8 +215,84 @@ export const getJsonSchemaSpec = (schema: ZodFieldType | ZodStructType): { $ref:
     _get(app_schema_map).add(schema);
     return { $ref: `#/components/schemas/${id}` };
   } else {
+    // 当没有注册ID时，生成内联schema但不包含元数据（会在引用时处理）
     return schema.toJSONSchema({ target: 'openapi' });
   }
+};
+
+// -------------------------------------------------------- 错误响应处理逻辑 --------------------------------------------------------
+
+/** 从ResponsesDefinition中找到对应的端点 */
+const findEndpointByResponsesDefinition = (def: ResponsesDefinition, app: AppDefinition): EndpointDefinition | null => {
+  // 通过遍历app中的端点来找到拥有该ResponsesDefinition的端点
+  for (const endpoint of app.endpoints) {
+    if (endpoint.responses === def) {
+      return endpoint;
+    }
+  }
+  return null;
+};
+
+/** 检查端点是否有请求参数 */
+const hasRequestParameters = (endpoint: EndpointDefinition): boolean => {
+  return endpoint.parameters.length > 0 || endpoint.request.content.length > 0;
+};
+
+/** 检查端点是否有安全要求 */
+const hasSecurityRequirements = (endpoint: EndpointDefinition, app: AppDefinition): boolean => {
+  // 如果端点明确设置了security（包括空数组），使用端点的设置
+  if (endpoint.isSecurityExplicitlySet) {
+    return endpoint.security !== undefined && endpoint.security.length > 0;
+  }
+  // 否则使用全局安全要求
+  return app.security.length > 0;
+};
+
+/** 获取安全方案相关的错误 */
+const getSecurityErrors = (endpoint: EndpointDefinition, app: AppDefinition): ErrorDefinition[] => {
+  const errors: ErrorDefinition[] = [];
+  
+  // 获取有效的安全要求
+  const securityRequirements = endpoint.isSecurityExplicitlySet 
+    ? (endpoint.security || [])
+    : app.security;
+  
+  // 收集所有安全方案的错误
+  for (const securityReq of securityRequirements) {
+    errors.push(...securityReq.security.errors);
+  }
+  
+  return errors;
+};
+
+/** 获取端点的所有错误（显式 + 自动） */
+const getAllErrorsForEndpoint = (endpoint: EndpointDefinition, app: AppDefinition): ErrorDefinition[] => {
+  const errorMap = new Map<string, ErrorDefinition>();
+  
+  // 先添加端点显式定义的错误
+  for (const error of endpoint.errors) {
+    errorMap.set(error.id, error);
+  }
+  
+  // 添加参数校验错误（如果有请求参数）
+  if (hasRequestParameters(endpoint) && app.globalErrorDefinition?.validationError) {
+    const error = app.globalErrorDefinition.validationError;
+    if (!errorMap.has(error.id)) {
+      errorMap.set(error.id, error);
+    }
+  }
+  
+  // 添加安全相关错误（如果有安全要求）
+  if (hasSecurityRequirements(endpoint, app)) {
+    const securityErrors = getSecurityErrors(endpoint, app);
+    for (const error of securityErrors) {
+      if (!errorMap.has(error.id)) {
+        errorMap.set(error.id, error);
+      }
+    }
+  }
+  
+  return Array.from(errorMap.values());
 };
 
 // 生成 OpenAPI Document

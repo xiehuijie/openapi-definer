@@ -3,7 +3,13 @@ import type { Method, ParameterLocation } from '../types/openapi.ts';
 import type { TagDefinition } from './tag.ts';
 import type { SecurityRequireDefinition } from './security.ts';
 import type { ExternalDocsDefinition } from './external.ts';
-import { getJsonSchemaMeta, getJsonSchemaSpec, ZodBasicStruct, type ZodFieldType } from './_openapi.ts';
+import {
+  getJsonSchemaMeta,
+  getJsonSchemaSpec,
+  ZodBasicStruct,
+  type ZodFieldType,
+  hasJsonSchemaMeta
+} from './_openapi.ts';
 import type { ErrorDefinition } from './error.ts';
 import type { HttpStatusCode } from '../types/httpStatus.ts';
 import { type MediaTypeDefinition, defineJsonContent } from './media.ts';
@@ -199,12 +205,14 @@ export class ParametersDefinition {
     this.schema = options.schema;
 
     setParameterGenerator(this, (locale) => {
-      const schema_meta = getJsonSchemaMeta(this.schema, locale);
+      const hasJsonMeta = hasJsonSchemaMeta(this.schema);
+      const schema_meta = hasJsonMeta ? getJsonSchemaMeta(this.schema, locale) : null;
+      
       return {
         name: this.name,
         in: this.location,
-        description: schema_meta.description,
-        required: schema_meta.default === void 0,
+        description: schema_meta?.description,
+        required: schema_meta?.default === void 0,
         schema: getJsonSchemaSpec(this.schema),
       };
     });
@@ -330,6 +338,16 @@ export class EndpointDefinition {
   readonly security?: readonly SecurityRequireDefinition[];
   readonly deprecated: boolean;
   readonly errors: readonly ErrorDefinition[];
+  
+  /** 是否明确设置了security（用于区分继承和覆盖） */
+  private readonly hasExplicitSecurity: boolean;
+
+  /**
+   * 检查端点是否明确设置了安全要求
+   */
+  get isSecurityExplicitlySet(): boolean {
+    return this.hasExplicitSecurity;
+  }
 
   constructor(options: EndpointOptions<Method>) {
     // 当请求方法不允许有请求体却提供了请求体时，抛出错误
@@ -368,7 +386,11 @@ export class EndpointDefinition {
     this.description = options.description || createDefaultText('');
     this.tags = options.tags ? [...(layer.tags || []), ...options.tags] : (layer.tags ?? []);
     this.externalDocs = options.externalDocs || layer.externalDocs;
+    
+    // 记录是否明确设置了security
+    this.hasExplicitSecurity = 'security' in options;
     this.security = options.security ?? layer.security;
+    
     this.deprecated = options.deprecated || false;
     this.errors = options.errors || [];
     this.parameters = normalizeParamters();
@@ -387,7 +409,7 @@ export class EndpointDefinition {
         requestBody: this.request.content.length > 0 ? getRequestSchema(this.request, locale) : void 0,
         responses: getResponseSchema(this.responses, locale),
         externalDocs: this.externalDocs ? getExternalDocsSchema(this.externalDocs, locale) : void 0,
-        security: this.security ? getSecurityRequireSpec(this.security) : void 0,
+        security: this.hasExplicitSecurity && this.security ? getSecurityRequireSpec(this.security) : this.hasExplicitSecurity ? [] : void 0,
         deprecated: this.deprecated,
       };
     });
