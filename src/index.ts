@@ -7,3 +7,23 @@
  */
 
 export const version = '0.1.0';
+
+export {
+  defineApp,
+  defineApiKeySecurity,
+  defineHttpSecurity,
+  defineOAuth2Security,
+  defineOpenIdConnectSecurity,
+  defineField,
+  defineStruct,
+  defineLayer,
+  defineError,
+  defineEndpoint,
+  defineExternalDocs,
+  defineServer,
+  defineTag,
+  defineJsonContent,
+  defineFileContent,
+} from './core/index.ts';
+export type { ZodFieldType, ZodStructType } from './core/_openapi.ts';
+export { createTextDefiner } from './utils/index.ts';

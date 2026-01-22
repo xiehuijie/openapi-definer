@@ -1,53 +1,39 @@
 #!/usr/bin/env node
 
-/**
- * OpenAPI Definer CLI
- *
- * Command-line interface for generating server and client SDKs from API definitions.
- */
-
 import { Command } from 'commander';
-import { version } from './index.js';
+import { version } from './index.ts';
+import initAction from './cli/init.ts';
+import validateAction from './cli/validate.ts';
+import generateAction from './cli/generate.ts';
 
 const program = new Command();
 
 program
   .name('openapi-definer')
-  .description(
-    'A factory definition program that allows you to define things related to the API using intuitive code'
-  )
+  .description('A factory definition program that allows you to define things related to the API using intuitive code')
   .version(version, '-v, --version', 'Display version information');
 
+// init 命令
 program
   .command('init')
   .description('Initialize a new API definition project')
   .option('-d, --dir <directory>', 'Target directory', '.')
-  .action((options) => {
-    console.log('Initializing new API definition project...');
-    console.log('Directory:', options.dir);
-    // Implementation to be added
-  });
+  .action((options) => initAction(options));
 
-program
-  .command('generate')
-  .description('Generate SDK from API definition')
-  .option('-i, --input <file>', 'Input API definition file')
-  .option('-o, --output <directory>', 'Output directory for generated SDK')
-  .option('-t, --type <type>', 'SDK type (client, server, both)', 'both')
-  .action((options) => {
-    console.log('Generating SDK from API definition...');
-    console.log('Options:', options);
-    // Implementation to be added
-  });
-
+// validate 命令
 program
   .command('validate')
   .description('Validate an API definition')
   .argument('<file>', 'API definition file to validate')
-  .action((file) => {
-    console.log('Validating API definition...');
-    console.log('File:', file);
-    // Implementation to be added
-  });
+  .action((file) => validateAction(file));
+
+// generate 命令
+program
+  .command('generate <file>')
+  .description('Generate OpenAPI specification from API definition file')
+  .option('-o, --output <path>', 'Output file path', './openapi.json')
+  .option('-f, --format <format>', 'Output format: json or yaml', 'json')
+  .option('-l, --locale <locale>', 'Locale for generated documentation', 'en')
+  .action((file, options) => generateAction(file, options));
 
 program.parse();

@@ -1,19 +1,17 @@
-/**
- * Playground for testing OpenAPI Definer
- *
- * Run with: pnpm playground
- */
+import { defineApp } from '../dist/index.js';
+import { Authorization, Signature, t } from './common.ts';
+import { endpoints } from './endpoints.ts';
 
-import { version } from '../src/index.js';
-
-console.log('='.repeat(60));
-console.log('OpenAPI Definer Playground');
-console.log(`Version: ${version}`);
-console.log('='.repeat(60));
-console.log();
-
-// Add your playground code here
-
-console.log('='.repeat(60));
-console.log('Playground execution complete!');
-console.log('='.repeat(60));
+export default defineApp({
+  title: t({
+    'zh-CN': '示例 API',
+    'en-US': 'Example API',
+  }),
+  version: '1.0.0',
+  description: t({
+    'zh-CN': '这是一个示例 API 文档',
+    'en-US': 'This is an example API documentation',
+  }),
+  endpoints: [...endpoints],
+  security: [Authorization.require(), Signature.require()],
+});
