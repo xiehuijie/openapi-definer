@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Features
 
 #### Core Functionality
+
 - Complete OpenAPI 3.1 specification support
 - Zod schema to OpenAPI schema conversion
 - Support for all HTTP methods (GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, TRACE)
@@ -49,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Security schemes (API Key, HTTP, OAuth2, OpenID Connect)
 
 #### Developer Experience
+
 - Type-safe API definitions
 - Intuitive and clean API
 - Auto-completion support in IDEs
@@ -57,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ESM and CJS module support
 
 ### Documentation
+
 - README with quick start guide
 - Usage guide with examples
 - Complete API reference
@@ -64,6 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project summary and architecture
 
 ### Technical Details
+
 - Built with TypeScript 5.9
 - Uses Zod 4.2 for schema validation
 - Commander 14.0 for CLI
@@ -78,6 +82,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Initial project setup
 - TypeScript configuration
 - Build system with tsup
@@ -96,6 +101,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2025-12-23
 
 ### Added
+
 - Initial release
 - Project scaffolding and configuration
 - Development environment setup

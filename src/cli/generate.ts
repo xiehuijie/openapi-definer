@@ -84,7 +84,7 @@ export default async function generateAction(file: string, options: GenerateOpti
             noRefs: true,
           });
         }
-      } catch (error) {
+      } catch {
         console.warn('⚠️  Warning: Failed to generate YAML, falling back to JSON format');
         format = 'json';
         content = JSON.stringify(document, null, 2);

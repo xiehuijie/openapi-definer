@@ -3,7 +3,7 @@ import type { ExternalDocsDefinition } from './external.ts';
 import { setTagGenerator, getExternalDocsSchema } from './_openapi.ts';
 
 interface TagOptions {
-  /** 标签名称　`unique` */
+  /** 标签名称 `unique` */
   name: string;
   /** 标签描述 */
   description?: Text;
@@ -15,13 +15,11 @@ export class TagDefinition {
   private options: TagOptions;
   constructor(options: TagOptions) {
     this.options = options;
-    
+
     setTagGenerator(this, (locale) => ({
       name: this.options.name,
       description: this.options.description?.[locale],
-      externalDocs: this.options.externalDocs 
-        ? getExternalDocsSchema(this.options.externalDocs, locale) 
-        : undefined,
+      externalDocs: this.options.externalDocs ? getExternalDocsSchema(this.options.externalDocs, locale) : undefined,
     }));
   }
 

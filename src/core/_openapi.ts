@@ -56,7 +56,7 @@ export const hasJsonSchemaMeta = (schema: ZodFieldType | ZodStructType): boolean
 const enrichJsonSchemaProperties = (properties: Record<string, any>, zodShape: Record<string, any>, locale: string): void => {
   for (const [key, propSchema] of Object.entries(properties)) {
     const zodFieldSchema = zodShape[key];
-    
+
     // 处理字段级别的元数据（直接定义的字段）
     if (zodFieldSchema && json_schema_meta.has(zodFieldSchema)) {
       const meta = getJsonSchemaMeta(zodFieldSchema, locale);
@@ -66,11 +66,11 @@ const enrichJsonSchemaProperties = (properties: Record<string, any>, zodShape: R
       if (meta.examples) propSchema.examples = meta.examples;
       if (meta.deprecated) propSchema.deprecated = meta.deprecated;
     }
-    
+
     // 处理数组项 - 检查是否应该使用引用
     if (propSchema.type === 'array' && propSchema.items && zodFieldSchema?._def?.type === 'array') {
       const arrayElementSchema = zodFieldSchema._def.element;
-      
+
       // 如果数组元素有注册的 ID，替换为引用
       const elementId = schema2id.get(arrayElementSchema);
       if (currentApp && elementId !== undefined) {
@@ -86,31 +86,31 @@ const enrichJsonSchemaProperties = (properties: Record<string, any>, zodShape: R
           if (meta.examples) propSchema.items.examples = meta.examples;
           if (meta.deprecated) propSchema.items.deprecated = meta.deprecated;
         }
-        
+
         // 递归处理数组中的对象
         if (propSchema.items.type === 'object' && propSchema.items.properties) {
           let itemShape = null;
-          
+
           if (arrayElementSchema?._def?.shape) {
             itemShape = arrayElementSchema._def.shape;
           }
-          
+
           if (itemShape) {
             enrichJsonSchemaProperties(propSchema.items.properties, itemShape, locale);
           }
         }
       }
     }
-    
+
     // 递归处理嵌套对象（结构体）
     else if (propSchema.type === 'object' && propSchema.properties) {
       let nestedShape = null;
-      
+
       // 首先尝试从当前字段的 zod schema 中获取 shape
       if (zodFieldSchema?._def?.shape) {
         nestedShape = zodFieldSchema._def.shape;
       }
-      
+
       if (nestedShape) {
         enrichJsonSchemaProperties(propSchema.properties, nestedShape, locale);
       }
@@ -125,10 +125,10 @@ const customZodToJsonSchema = (schema: ZodFieldType | ZodStructType): any => {
     const elementSchema = schema._def.element;
     return {
       type: 'array',
-      items: getJsonSchemaSpec(elementSchema)
+      items: getJsonSchemaSpec(elementSchema),
     };
   }
-  
+
   // 对于其他类型，使用标准转换但不递归调用 getJsonSchemaSpec
   const jsonSchema = schema.toJSONSchema({ target: 'openapi' });
   delete jsonSchema.$schema;
@@ -139,7 +139,7 @@ const customZodToJsonSchema = (schema: ZodFieldType | ZodStructType): any => {
 export const zodToJsonSchema = (schema: ZodFieldType | ZodStructType, locale: string): any => {
   // 使用自定义转换来正确处理引用
   const jsonSchema = customZodToJsonSchema(schema);
-  
+
   // 处理顶级 schema 的元数据
   if (json_schema_meta.has(schema)) {
     const meta = getJsonSchemaMeta(schema, locale);
@@ -149,12 +149,12 @@ export const zodToJsonSchema = (schema: ZodFieldType | ZodStructType, locale: st
     if (meta.examples) jsonSchema.examples = meta.examples;
     if (meta.deprecated) jsonSchema.deprecated = meta.deprecated;
   }
-  
+
   // 如果是对象类型，递归处理属性的字段元数据
   if (jsonSchema.type === 'object' && jsonSchema.properties && (schema as any)._def?.shape) {
     enrichJsonSchemaProperties(jsonSchema.properties, (schema as any)._def.shape, locale);
   }
-  
+
   return jsonSchema;
 };
 
@@ -215,18 +215,18 @@ export const setResponseGenerator = (def: ResponsesDefinition, fn: ResponsesSche
 export const getResponseSchema = (def: ResponsesDefinition, locale: string) => {
   // 获取原始响应Schema
   const originalResponse = responses_generator_map.get(def)!(locale);
-  
+
   // 查找对应的端点以确定是否需要自动添加错误
   if (currentApp) {
     const endpoint = findEndpointByResponsesDefinition(def, currentApp);
     if (endpoint) {
       // 获取端点的所有错误（显式 + 自动）
       const allErrors = getAllErrorsForEndpoint(endpoint, currentApp);
-      
+
       // 如果有自动错误需要添加，合并到响应中
       if (allErrors.length > 0) {
         const errorsByStatus = new Map<number, typeof allErrors>();
-        
+
         // 按状态码分组自动错误
         for (const error of allErrors) {
           if (!errorsByStatus.has(error.http)) {
@@ -237,35 +237,31 @@ export const getResponseSchema = (def: ResponsesDefinition, locale: string) => {
             errorsByStatus.get(error.http)!.push(error);
           }
         }
-        
+
         // 为每个状态码生成错误响应
         for (const [status, errors] of errorsByStatus) {
           if (errors.length > 0 && !(status in originalResponse)) {
             // 创建错误Schema，如果多个错误则用union
-            const errorSchema = errors.length === 1 
-              ? errors[0].schema 
-              : z.union(errors.map(e => e.schema as any) as [any, any, ...any[]]);
-            
+            const errorSchema = errors.length === 1 ? errors[0].schema : z.union(errors.map((e) => e.schema as any) as [any, any, ...any[]]);
+
             // 应用统一错误响应结构（如果配置了）
-            const finalErrorSchema = currentApp.unifyErrorResponseStruct 
-              ? currentApp.unifyErrorResponseStruct(endpoint, errorSchema as any)
-              : errorSchema;
-            
+            const finalErrorSchema = currentApp.unifyErrorResponseStruct ? currentApp.unifyErrorResponseStruct(endpoint, errorSchema as any) : errorSchema;
+
             // 添加到响应中
             originalResponse[status] = {
               description: getResponseDescription(status as any, locale),
               content: {
                 'application/json': {
-                  schema: getJsonSchemaSpec(finalErrorSchema)
-                }
-              }
+                  schema: getJsonSchemaSpec(finalErrorSchema),
+                },
+              },
             };
           }
         }
       }
     }
   }
-  
+
   return originalResponse;
 };
 
@@ -343,29 +339,27 @@ const hasSecurityRequirements = (endpoint: EndpointDefinition, app: AppDefinitio
 /** 获取安全方案相关的错误 */
 const getSecurityErrors = (endpoint: EndpointDefinition, app: AppDefinition): ErrorDefinition[] => {
   const errors: ErrorDefinition[] = [];
-  
+
   // 获取有效的安全要求
-  const securityRequirements = endpoint.isSecurityExplicitlySet 
-    ? (endpoint.security || [])
-    : app.security;
-  
+  const securityRequirements = endpoint.isSecurityExplicitlySet ? endpoint.security || [] : app.security;
+
   // 收集所有安全方案的错误
   for (const securityReq of securityRequirements) {
     errors.push(...securityReq.security.errors);
   }
-  
+
   return errors;
 };
 
 /** 获取端点的所有错误（显式 + 自动） */
 const getAllErrorsForEndpoint = (endpoint: EndpointDefinition, app: AppDefinition): ErrorDefinition[] => {
   const errorMap = new Map<string, ErrorDefinition>();
-  
+
   // 先添加端点显式定义的错误
   for (const error of endpoint.errors) {
     errorMap.set(error.id, error);
   }
-  
+
   // 添加参数校验错误（如果有请求参数）
   if (hasRequestParameters(endpoint) && app.globalErrorDefinition?.validationError) {
     const error = app.globalErrorDefinition.validationError;
@@ -373,7 +367,7 @@ const getAllErrorsForEndpoint = (endpoint: EndpointDefinition, app: AppDefinitio
       errorMap.set(error.id, error);
     }
   }
-  
+
   // 添加安全相关错误（如果有安全要求）
   if (hasSecurityRequirements(endpoint, app)) {
     const securityErrors = getSecurityErrors(endpoint, app);
@@ -383,7 +377,7 @@ const getAllErrorsForEndpoint = (endpoint: EndpointDefinition, app: AppDefinitio
       }
     }
   }
-  
+
   return Array.from(errorMap.values());
 };
 

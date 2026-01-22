@@ -130,4 +130,5 @@ export const HttpStatusCode = {
 /**
  * https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
  */
+// eslint-disable-next-line no-redeclare
 export type HttpStatusCode = (typeof HttpStatusCode)[keyof typeof HttpStatusCode];

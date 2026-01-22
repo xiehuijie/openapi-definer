@@ -16,6 +16,7 @@ export const Method = {
   /** TRACE */
   TRACE: 'TRACE',
 } as const;
+// eslint-disable-next-line no-redeclare
 export type Method = (typeof Method)[keyof typeof Method];
 
 export const SecurityType = {
@@ -28,6 +29,7 @@ export const SecurityType = {
   /** OpenID Connect */
   OpenIdConnect: 'openIdConnect',
 } as const;
+// eslint-disable-next-line no-redeclare
 export type SecurityType = (typeof SecurityType)[keyof typeof SecurityType];
 
 export const ParameterLocation = {
@@ -40,4 +42,5 @@ export const ParameterLocation = {
   /** Cookie Parameter */
   Cookie: 'cookie',
 } as const;
+// eslint-disable-next-line no-redeclare
 export type ParameterLocation = (typeof ParameterLocation)[keyof typeof ParameterLocation];

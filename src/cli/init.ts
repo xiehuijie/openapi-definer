@@ -9,9 +9,9 @@ export default async function initAction(options: InitOptions) {
   console.log('🚀 Initializing new API definition project...');
   console.log('Directory:', options.dir);
 
-      const targetDir = resolve(options.dir);
+  const targetDir = resolve(options.dir);
 
-      const exampleContent = `import { defineApp, defineEndpoint, Method } from 'openapi-definer';
+  const exampleContent = `import { defineApp, defineEndpoint, Method } from 'openapi-definer';
 import { z } from 'zod';
 
 // 定义API应用
