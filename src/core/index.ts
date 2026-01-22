@@ -9,3 +9,4 @@ export * from './tag.ts';
 export * from './external.ts';
 export * from './media.ts';
 export * from './layer.ts';
+export { _generate } from './_openapi.ts';
