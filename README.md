@@ -110,7 +110,7 @@ import { app } from './api';
 serveDoc(app, {
   port: 3000,
   ui: 'scalar', // 'swagger', 'scalar', or 'redoc'
-  open: true,   // Open browser automatically
+  open: true, // Open browser automatically
 });
 ```
 
@@ -134,6 +134,7 @@ openapi-definer validate api.ts
 ## CLI Commands
 
 ### `init`
+
 Initialize a new API definition project with example files.
 
 ```bash
@@ -144,6 +145,7 @@ Options:
 ```
 
 ### `export`
+
 Export OpenAPI specification from your API definition.
 
 ```bash
@@ -159,6 +161,7 @@ Options:
 ```
 
 ### `serve`
+
 Start an interactive documentation server.
 
 ```bash
@@ -176,6 +179,7 @@ Options:
 ```
 
 ### `validate`
+
 Validate your API definition for errors.
 
 ```bash
@@ -211,7 +215,7 @@ const server = createDevServer(
     ui: 'scalar',
     watchPath: './src',
     hotReload: true,
-  }
+  },
 );
 
 await server.start();
@@ -384,17 +388,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [NPM Package](https://www.npmjs.com/package/openapi-definer)
 - [Issues](https://github.com/xiehuijie/openapi-definer/issues)
 - [Changelog](CHANGELOG.md)
-├── src/              # Source code
-│   ├── index.ts      # Main entry point
-│   ├── cli.ts        # CLI entry point
-│   ├── types.ts      # TypeScript types
-│   └── utils.ts      # Utility functions
-├── tests/            # Test files
-├── docs/             # Documentation
-├── examples/         # Example projects
-├── playground/       # Development playground
-├── dist/             # Build output
-└── .github/          # GitHub workflows
+  ├── src/ # Source code
+  │ ├── index.ts # Main entry point
+  │ ├── cli.ts # CLI entry point
+  │ ├── types.ts # TypeScript types
+  │ └── utils.ts # Utility functions
+  ├── tests/ # Test files
+  ├── docs/ # Documentation
+  ├── examples/ # Example projects
+  ├── playground/ # Development playground
+  ├── dist/ # Build output
+  └── .github/ # GitHub workflows
+
 ```
 
 ## Scripts
@@ -427,3 +432,4 @@ MIT © [V5.xie](https://github.com/xiehuijie)
 - 🐛 [Issue Tracker](https://github.com/xiehuijie/openapi-definer/issues)
 - 💬 [Discussions](https://github.com/xiehuijie/openapi-definer/discussions)
 
+```

@@ -118,8 +118,6 @@ export class SecurityDefinition {
    * @param requirements 安全需求，仅适用于 OAuth2 和 OpenID Connect 类型
    */
   require(...requirements: string[]) {
-    if (this.type === 'apiKey' || this.type === 'http') {
-    }
     return new SecurityRequireDefinition(this, requirements);
   }
 }

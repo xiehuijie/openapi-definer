@@ -7,7 +7,7 @@ export interface JsonContentOptions {
   schema: ZodStructType;
 }
 
-export interface FileContentOptions {}
+export type FileContentOptions = Record<string, never>;
 
 type MimeType = 'application/json' | 'application/octet-stream';
 
