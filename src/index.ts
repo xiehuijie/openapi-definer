@@ -24,6 +24,7 @@ export {
   defineTag,
   defineJsonContent,
   defineFileContent,
+  _generate,
 } from './core/index.ts';
 export type { ZodFieldType, ZodStructType } from './core/_openapi.ts';
 export { createTextDefiner } from './utils/index.ts';
