@@ -44,9 +44,16 @@ export const setJsonSchemaMeta = (id: string, schema: ZodFieldType | ZodStructTy
 export const getSchemaId = (schema: ZodFieldType | ZodStructType): string | undefined => schema2id.get(schema);
 
 /** 获取 JSON Schema 元数据 */
-export const getJsonSchemaMeta = (schema: ZodFieldType | ZodStructType, locale: string): JsonSchemaMeta => {
-  if (!json_schema_meta.has(schema)) throw new Error('JsonSchemaMeta not found');
-  return { id: schema2id.get(schema)!, ...json_schema_meta.get(schema)!(locale) };
+export const getJsonSchemaMeta = (schema: ZodFieldType | ZodStructType, locale: string): JsonSchemaMeta | undefined => {
+  if (json_schema_meta.has(schema)) {
+    return { id: schema2id.get(schema)!, ...json_schema_meta.get(schema)!(locale) };
+  } else {
+    if (['optional', 'default', 'nullable'].includes(schema.def.type)) {
+      return getJsonSchemaMeta((schema as any).def.innerType, locale);
+    } else {
+      return void 0;
+    }
+  }
 };
 
 /** 检查schema是否有JSON Schema元数据 */
@@ -58,11 +65,11 @@ const enrichJsonSchemaProperties = (properties: Record<string, any>, zodShape: R
     const zodFieldSchema = zodShape[key];
 
     // 处理字段级别的元数据（直接定义的字段）
-    if (zodFieldSchema && json_schema_meta.has(zodFieldSchema)) {
-      const meta = getJsonSchemaMeta(zodFieldSchema, locale);
+    const meta = getJsonSchemaMeta(zodFieldSchema, locale);
+    if (zodFieldSchema && meta !== void 0) {
       if (meta.title) propSchema.title = meta.title;
       if (meta.description) propSchema.description = meta.description;
-      if (meta.default !== undefined) propSchema.default = meta.default;
+      if (meta.default !== void 0) propSchema.default = meta.default;
       if (meta.examples) propSchema.examples = meta.examples;
       if (meta.deprecated) propSchema.deprecated = meta.deprecated;
     }
@@ -78,11 +85,11 @@ const enrichJsonSchemaProperties = (properties: Record<string, any>, zodShape: R
         propSchema.items = { $ref: `#/components/schemas/${elementId}` };
       } else {
         // 处理数组元素是字段的情况
-        if (arrayElementSchema && json_schema_meta.has(arrayElementSchema)) {
-          const meta = getJsonSchemaMeta(arrayElementSchema, locale);
+        const meta = getJsonSchemaMeta(arrayElementSchema, locale);
+        if (arrayElementSchema && meta !== void 0) {
           if (meta.title) propSchema.items.title = meta.title;
           if (meta.description) propSchema.items.description = meta.description;
-          if (meta.default !== undefined) propSchema.items.default = meta.default;
+          if (meta.default !== void 0) propSchema.items.default = meta.default;
           if (meta.examples) propSchema.items.examples = meta.examples;
           if (meta.deprecated) propSchema.items.deprecated = meta.deprecated;
         }
@@ -141,17 +148,13 @@ export const zodToJsonSchema = (schema: ZodFieldType | ZodStructType, locale: st
   const jsonSchema = customZodToJsonSchema(schema);
 
   // 处理顶级 schema 的元数据
-  if (json_schema_meta.has(schema)) {
-    const meta = getJsonSchemaMeta(schema, locale);
+  const meta = getJsonSchemaMeta(schema, locale);
+  if (meta !== void 0) {
     if (meta.title) jsonSchema.title = meta.title;
     if (meta.description) jsonSchema.description = meta.description;
-    if (meta.default !== undefined) jsonSchema.default = meta.default;
+    if (meta.default !== void 0) jsonSchema.default = meta.default;
     if (meta.examples) jsonSchema.examples = meta.examples;
     if (meta.deprecated) jsonSchema.deprecated = meta.deprecated;
-  } else {
-    if (['optional', 'default', 'nullable'].includes(schema.def.type)) {
-      return zodToJsonSchema((schema as any).def.innerType, locale);
-    }
   }
 
   // 如果是对象类型，递归处理属性的字段元数据
