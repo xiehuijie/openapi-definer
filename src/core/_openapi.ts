@@ -148,11 +148,15 @@ export const zodToJsonSchema = (schema: ZodFieldType | ZodStructType, locale: st
     if (meta.default !== undefined) jsonSchema.default = meta.default;
     if (meta.examples) jsonSchema.examples = meta.examples;
     if (meta.deprecated) jsonSchema.deprecated = meta.deprecated;
+  } else {
+    if (['optional', 'default', 'nullable'].includes(schema.def.type)) {
+      return zodToJsonSchema((schema as any).def.innerType, locale);
+    }
   }
 
   // 如果是对象类型，递归处理属性的字段元数据
-  if (jsonSchema.type === 'object' && jsonSchema.properties && (schema as any)._def?.shape) {
-    enrichJsonSchemaProperties(jsonSchema.properties, (schema as any)._def.shape, locale);
+  if (jsonSchema.type === 'object' && jsonSchema.properties && (schema as any).def.shape) {
+    enrichJsonSchemaProperties(jsonSchema.properties, (schema as any).def.shape, locale);
   }
 
   return jsonSchema;
